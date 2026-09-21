@@ -285,3 +285,20 @@ export function composeWhySheet(input, label, setsToday) {
     recommendation: `Back off the weight or stop here for ${input.exercise.name}.`,
   };
 }
+
+/**
+ * AC-18, for the Pain-reported card (mockup 6, which shows it under the
+ * HOLD label with its own Why? link). AC-34: no diagnosis, no cause, no
+ * treatment suggestion — this stays procedural.
+ * @param {import('../domain/types.js').Exercise} exercise
+ * @returns {WhySheetCopy}
+ */
+export function composePainWhySheet(exercise) {
+  return {
+    title: 'Why HOLD?',
+    whatIDid: `Reported pain on ${exercise.name}.`,
+    calculated: 'Pain isn’t calculated from your sets — it comes directly from you.',
+    aiInterpretation: 'A pain report overrides the usual recommendation for the rest of this session.',
+    recommendation: COPY.painReported,
+  };
+}

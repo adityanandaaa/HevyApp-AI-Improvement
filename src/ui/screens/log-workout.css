@@ -280,3 +280,22 @@
   font-size: var(--fs-secondary);
   color: var(--text);
 }
+
+/* Add Set / Pain split row (AC-27): Add Set ~60%, Pain ~40%. */
+.add-set-row {
+  display: flex;
+  gap: 8px;
+}
+
+.add-set-row__add {
+  flex: 3 1 0;
+}
+
+.add-set-row__pain {
+  flex: 2 1 0;
+}
+
+.add-set-row__pain[aria-pressed='true'] {
+  background: var(--blue);
+  color: var(--text);
+}

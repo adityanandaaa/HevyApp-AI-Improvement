@@ -1,6 +1,10 @@
 /** @typedef {import('../domain/types.js').SetEntry} SetEntry */
 /** @typedef {import('../domain/types.js').ExerciseLog} ExerciseLog */
 /** @typedef {import('../domain/types.js').SignalLabel} SignalLabel */
+/** @typedef {import('../domain/types.js').PainState} PainState */
+
+import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
+import { PUSH_DAY_SESSIONS } from '../data/sessions.js';
 
 // Mutable, in-memory, session-scoped runtime state (HANDOFF file tree calls
 // this "state/store"). Nothing here is persisted: a reload starts a fresh
@@ -10,9 +14,10 @@
 /**
  * @typedef {object} SignalState
  * @property {string} exerciseId
- * @property {number} setNumber 1-based, the row that triggered it
+ * @property {number} setNumber 1-based, the row that triggered it (0 for Pain, which isn't tied to a row)
  * @property {SignalLabel} label
  * @property {string} reason
+ * @property {boolean} [isPain] true when this card came from the Pain button, not a rule trigger
  */
 
 /**
@@ -40,6 +45,7 @@
 /**
  * @typedef {object} State
  * @property {Record<string, Record<number, SetEntry>>} todaysSetsByExercise exerciseId -> { setNumber: SetEntry }
+ * @property {PainState[]} painReports R10: pain reports so far this session
  * @property {SignalState | null} signal
  * @property {ChipsState | null} chips
  * @property {RestTimerState | null} restTimer
@@ -49,11 +55,53 @@
 /** @type {State} */
 export const state = {
   todaysSetsByExercise: {},
+  painReports: [],
   signal: null,
   chips: null,
   restTimer: null,
   rejectedRecommendations: [],
 };
+
+/**
+ * The live EvaluateInput, reflecting everything logged/reported so far this
+ * session. Shared by ui/render.js (direction lines) and ui/log-workout.js
+ * (signals), so both react to the same pain/today's-logs state.
+ * @returns {import('../domain/rules/evaluate.js').EvaluateInput}
+ */
+export function buildEvaluateInput() {
+  return {
+    routineExercises: PUSH_DAY_EXERCISES,
+    sessions: PUSH_DAY_SESSIONS,
+    todaysLogs: todaysLogs(),
+    painReports: state.painReports,
+  };
+}
+
+/**
+ * R10: report pain on an exercise, at any point in the session. Reporting it
+ * again on the same exercise is a no-op here — undo is `clearPain`.
+ * @param {string} exerciseId
+ * @param {number} atSetIndex
+ */
+export function reportPain(exerciseId, atSetIndex) {
+  if (state.painReports.some((p) => p.exerciseId === exerciseId)) return;
+  state.painReports.push({ exerciseId, atSetIndex });
+}
+
+/**
+ * AC-32: tapping "Pain reported" again clears it and restores normal
+ * evaluation for that exercise (and whatever it was propagating to later
+ * exercises).
+ * @param {string} exerciseId
+ */
+export function clearPain(exerciseId) {
+  state.painReports = state.painReports.filter((p) => p.exerciseId !== exerciseId);
+}
+
+/** @param {string} exerciseId */
+export function isPainReported(exerciseId) {
+  return state.painReports.some((p) => p.exerciseId === exerciseId);
+}
 
 /**
  * @param {string} exerciseId
@@ -167,6 +215,7 @@ export function endRestTimer() {
 /** Test-only: returns the module to a fresh session. */
 export function resetState() {
   state.todaysSetsByExercise = {};
+  state.painReports = [];
   state.signal = null;
   state.chips = null;
   state.restTimer = null;

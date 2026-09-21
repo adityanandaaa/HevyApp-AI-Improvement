@@ -12,12 +12,16 @@ import { reactiveSignal } from '../domain/rules/signal-trigger.js';
 import { computeTarget } from '../domain/rules/target.js';
 import { workingWeight } from '../domain/rules/working-weight.js';
 import { enforceGuardrails } from '../reasoning/provider.js';
-import { composeWhySheet, explain } from '../reasoning/scripted.js';
+import { composePainWhySheet, composeWhySheet, explain } from '../reasoning/scripted.js';
+import { renderDirectionLines } from './render.js';
 import { SIGNAL_ICON_IDS } from './signal-icons.js';
 import { TIMING } from './timing.js';
 import {
+  buildEvaluateInput,
+  clearPain,
   endRestTimer,
   logSet,
+  reportPain,
   selectChip,
   setChips,
   setSignal,
@@ -26,7 +30,6 @@ import {
   startRestTimer,
   state,
   tickRestTimer,
-  todaysLogs,
   unlogSet,
   adjustRestTimer as storeAdjustRestTimer,
 } from '../state/store.js';
@@ -51,16 +54,6 @@ let restIntervalId = null;
 let checkRequestId = 0;
 /** @type {HTMLElement | null} */
 let whySheetTriggerEl = null;
-
-/** @returns {import('../domain/rules/evaluate.js').EvaluateInput} */
-function buildEvaluateInput() {
-  return {
-    routineExercises: PUSH_DAY_EXERCISES,
-    sessions: PUSH_DAY_SESSIONS,
-    todaysLogs: todaysLogs(),
-    painReports: [],
-  };
-}
 
 /** @param {string} text */
 function announceLive(text) {
@@ -292,6 +285,42 @@ function handleCheckToggle(checkButton) {
   }, SIGNAL_DELAY_MS);
 }
 
+/**
+ * R10/AC-28/AC-32: report or undo pain on an exercise. Reuses the signal
+ * card (label HOLD, per mockup 6) rather than inventing a separate card type.
+ * @param {HTMLButtonElement} button
+ */
+function handlePainToggle(button) {
+  const exerciseBlock = button.closest('.exercise-block');
+  if (!(exerciseBlock instanceof HTMLElement)) return;
+  const exercise = PUSH_DAY_EXERCISES.find((e) => e.id === exerciseBlock.dataset.exercise);
+  if (!exercise) return;
+
+  const nowActive = button.getAttribute('aria-pressed') !== 'true';
+  button.setAttribute('aria-pressed', String(nowActive));
+  const label = button.querySelector('.add-set-row__pain-label');
+  const iconUse = button.querySelector('use');
+  if (label) label.textContent = nowActive ? 'Pain reported' : 'Pain';
+  if (iconUse) iconUse.setAttribute('href', nowActive ? '#icon-check' : '#icon-alert');
+
+  if (nowActive) {
+    reportPain(exercise.id, setsLoggedToday(exercise.id).length);
+    setSignal({ exerciseId: exercise.id, setNumber: 0, label: 'HOLD', reason: COPY.painReported, isPain: true });
+    setChips(null);
+    renderDockedCard();
+    announceLive('Pain reported');
+  } else {
+    clearPain(exercise.id);
+    if (state.signal?.isPain && state.signal.exerciseId === exercise.id) {
+      hideDockedCard();
+    }
+    announceLive('Pain cleared');
+  }
+
+  // R10: propagates to this and every later exercise's direction line.
+  renderDirectionLines();
+}
+
 function openWhySheet() {
   if (!state.signal) return;
   const exercise = PUSH_DAY_EXERCISES.find((e) => e.id === state.signal?.exerciseId);
@@ -299,11 +328,16 @@ function openWhySheet() {
 
   whySheetTriggerEl = /** @type {HTMLElement} */ (document.activeElement);
 
-  const evaluateInput = buildEvaluateInput();
-  const evaluation = evaluate(evaluateInput, exercise.id);
-  const target = computeTarget(exercise, PUSH_DAY_SESSIONS, evaluation);
-  const setsToday = setsLoggedToday(exercise.id);
-  const copy = composeWhySheet({ trigger: 'set_checked', exercise, evaluation, target }, state.signal.label, setsToday);
+  let copy;
+  if (state.signal.isPain) {
+    copy = composePainWhySheet(exercise);
+  } else {
+    const evaluateInput = buildEvaluateInput();
+    const evaluation = evaluate(evaluateInput, exercise.id);
+    const target = computeTarget(exercise, PUSH_DAY_SESSIONS, evaluation);
+    const setsToday = setsLoggedToday(exercise.id);
+    copy = composeWhySheet({ trigger: 'set_checked', exercise, evaluation, target }, state.signal.label, setsToday);
+  }
 
   whySheetTitleEl.textContent = copy.title;
   whySheetBodyEl.innerHTML = `
@@ -353,6 +387,12 @@ export function initLogWorkoutInteractions() {
   for (const checkButton of document.querySelectorAll('.check-btn')) {
     if (checkButton instanceof HTMLButtonElement) {
       checkButton.addEventListener('click', () => handleCheckToggle(checkButton));
+    }
+  }
+
+  for (const painButton of document.querySelectorAll('[data-pain-toggle]')) {
+    if (painButton instanceof HTMLButtonElement) {
+      painButton.addEventListener('click', () => handlePainToggle(painButton));
     }
   }
 

@@ -37,7 +37,8 @@ src/
                          and ui/log-workout.js
   ui/
     render.js            bridges evaluate()/reasoning into the DOM (no rules here)
-    log-workout.js         signal card, chips, Why? sheet, rest timer (M4)
+    log-workout.js         signal card, chips, Why? sheet, rest timer (M4),
+                             the Pain toggle (M5)
     signal-icons.js          SignalLabel -> sprite symbol id
     timing.js                  TIMING constants (section 9)
     tokens.css                  design tokens (section 10 of HANDOFF.md)
@@ -75,7 +76,8 @@ src/
     scenarios.js               MOCK dev-toolbar scenarios (not yet built)
   state/
     store.js                 mutable session-scoped state: today's logged
-                               sets, the active signal/chips, the rest timer
+                               sets, pain reports, the active signal/chips,
+                               the rest timer
 scripts/
   dev-server.js          zero-dependency static file server for local dev
 tests/
@@ -214,6 +216,27 @@ M4 additions:
   no row can end up hidden behind it, which satisfies the same intent
   without the padding-matching machinery the AC's literal mechanism implies.
 
+M5 additions:
+
+- **The Pain-reported card reuses the HOLD signal (icon + label), not a
+  separate card type.** Mockup 6 shows this directly — the card under the
+  Pain button reads "⏸ HOLD" — so `state.signal` just gets an `isPain`
+  flag rather than a whole parallel card variant, and it goes through the
+  same render/dismiss/Why? machinery as every other signal.
+  AC-28 itself only specifies the reason text, not the label; the mockup
+  settled it.
+- **The Why? sheet for Pain is its own composer**
+  (`composePainWhySheet`), not the rules-engine one, since there's no
+  evaluation/metric to explain — only the fact that pain was reported. Its
+  four blocks stay deliberately procedural (AC-34): no diagnosis, cause or
+  treatment language, checked by a test that greps the sheet text for
+  words like "diagnos", "injury", "treatment", "push through".
+- **Reporting or clearing pain re-renders every direction line**
+  (`ui/render.js`'s `renderDirectionLines` is now idempotent and
+  re-callable), since propagation (AC-30/31) can change any later
+  exercise's wording. Today's Focus is not re-rendered on pain, since it's
+  a pre-workout view HANDOFF doesn't ask to update mid-session.
+
 ## Milestones
 
 Tracking `HANDOFF.md` section 11. Each milestone is reviewed before starting the
@@ -224,7 +247,7 @@ next.
 - [x] M2 — Rules engine
 - [x] M3 — Today's Focus and direction line
 - [x] M4 — Signals
-- [ ] M5 — Pain
+- [x] M5 — Pain
 - [ ] M6 — Recap
 - [ ] M7 — Accessibility and QA
 - [ ] M8 — Live model (optional)

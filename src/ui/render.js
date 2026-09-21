@@ -1,29 +1,18 @@
 /** @typedef {import('../domain/types.js').Exercise} Exercise */
 /** @typedef {import('../domain/types.js').SignalLabel} SignalLabel */
-/** @typedef {import('../domain/rules/evaluate.js').EvaluateInput} EvaluateInput */
 
 import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
-import { PUSH_DAY_SESSIONS } from '../data/sessions.js';
 import { evaluate } from '../domain/rules/evaluate.js';
 import { computeTarget } from '../domain/rules/target.js';
 import { computeTodaysFocus } from '../domain/rules/todays-focus.js';
 import { COPY, displayLabel } from '../domain/copy.js';
 import { choose, composeTodaysFocusCopy, explain } from '../reasoning/scripted.js';
 import { SIGNAL_ICON_IDS } from './signal-icons.js';
+import { buildEvaluateInput } from '../state/store.js';
 
 // The UI never decides a signal (HANDOFF section 5, rule 2): it calls
 // evaluate() for the allowed signals and the reasoning provider for the
 // choice and wording, then only renders the result.
-
-// No pain or in-progress sets exist yet (Pain is M5, real set logging is
-// M4+), so today's state is fixed and empty for now.
-/** @type {EvaluateInput} */
-const evaluateInput = {
-  routineExercises: PUSH_DAY_EXERCISES,
-  sessions: PUSH_DAY_SESSIONS,
-  todaysLogs: [],
-  painReports: [],
-};
 
 /**
  * @param {SignalLabel} label
@@ -38,7 +27,7 @@ function signalIconMarkup(label) {
  * @returns {string}
  */
 function todaysFocusMarkup(variant) {
-  const data = computeTodaysFocus(evaluateInput);
+  const data = computeTodaysFocus(buildEvaluateInput());
   const copy = composeTodaysFocusCopy(data);
 
   const body =
@@ -81,6 +70,7 @@ function renderTodaysFocusCard(container, variant) {
  * @returns {string}
  */
 function directionLineMarkup(exercise) {
+  const evaluateInput = buildEvaluateInput();
   const evaluation = evaluate(evaluateInput, exercise.id);
 
   if (evaluation.historyBuilding) {
@@ -103,13 +93,20 @@ function directionLineMarkup(exercise) {
   `;
 }
 
-function renderDirectionLines() {
+/**
+ * Re-callable: replaces any direction line already in the DOM, so pain
+ * propagating to later exercises (AC-30/31) can re-render every line
+ * without duplicating elements.
+ */
+export function renderDirectionLines() {
   for (const block of document.querySelectorAll('.exercise-block')) {
     if (!(block instanceof HTMLElement)) continue;
     const exerciseId = block.dataset.exercise;
     const exercise = PUSH_DAY_EXERCISES.find((e) => e.id === exerciseId);
     const restLine = block.querySelector('.exercise-block__rest');
     if (!exercise || !restLine) continue;
+
+    block.querySelector('.direction-line, .direction-line--building')?.remove();
 
     const wrapper = document.createElement('div');
     wrapper.innerHTML = directionLineMarkup(exercise).trim();
