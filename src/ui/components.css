@@ -245,3 +245,93 @@
   overflow-y: auto;
   padding: 0 var(--margin) var(--margin);
 }
+
+/* Today's Focus (R14): one component, two wordings (AC-1 to AC-7). */
+.todays-focus {
+  margin: 12px 0 16px;
+}
+
+.todays-focus__heading {
+  margin: 0 0 4px;
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  color: var(--blue);
+  letter-spacing: 0.02em;
+}
+
+.todays-focus__session {
+  margin: 0 0 10px;
+  font-size: var(--fs-exercise);
+  font-weight: 700;
+}
+
+.todays-focus__signal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.todays-focus__signal .signal-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.todays-focus__teaser {
+  margin: 0 0 16px;
+  font-size: var(--fs-secondary);
+  color: var(--text);
+}
+
+.todays-focus__section-label {
+  margin: 12px 0 4px;
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.todays-focus__block {
+  margin: 0 0 4px;
+  font-size: var(--fs-secondary);
+}
+
+.todays-focus .btn-primary {
+  margin-top: 12px;
+}
+
+/* Exercise direction line (AC-8 to AC-11). */
+.direction-line {
+  margin: 10px 0;
+}
+
+.direction-line__row {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.direction-line__label {
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.direction-line__target {
+  font-size: var(--fs-body);
+  font-weight: 700;
+}
+
+.direction-line__reason {
+  margin: 4px 0 0;
+  font-size: var(--fs-secondary);
+  color: var(--text);
+}
+
+.direction-line--building {
+  margin: 10px 0;
+  font-size: var(--fs-secondary);
+  color: var(--text-muted);
+}

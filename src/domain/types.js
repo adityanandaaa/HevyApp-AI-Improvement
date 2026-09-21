@@ -71,6 +71,12 @@
  * @property {Exercise} exercise
  * @property {Evaluation} evaluation
  * @property {SetEntry} [lastSet]
+ * @property {import('./rules/target.js').Target | null} [target] INTERPRETATION: not
+ *   in HANDOFF's section 6 sketch. The scripted reason text (section 9) states
+ *   concrete weight numbers ("stable at 40kg... consider 42kg"), so the
+ *   scripted provider needs the computed target alongside the evaluation. A
+ *   live model (M8) may not need this same field — M8 point 3 sends only the
+ *   evaluation, exercise name, last set and trigger.
  */
 
 export {};

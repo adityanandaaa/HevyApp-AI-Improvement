@@ -1,6 +1,17 @@
+/** @typedef {import('./types.js').SignalLabel} SignalLabel */
+
 // Fixed strings, character limits and copy templates (HANDOFF section 9).
 // Exact strings only — no wording invented here beyond the "my proposal"
 // items HANDOFF itself calls out (chipsHeadingOtherChange).
+
+/**
+ * Section 6: "BACK_OFF displays as 'BACK OFF'".
+ * @param {SignalLabel} label
+ * @returns {string}
+ */
+export function displayLabel(label) {
+  return label === 'BACK_OFF' ? 'BACK OFF' : label;
+}
 
 export const LIMITS = {
   homeHook: 45,

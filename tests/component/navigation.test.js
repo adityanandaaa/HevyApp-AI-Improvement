@@ -1,19 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const html = readFileSync(join(here, '../../index.html'), 'utf-8');
-
-/** @returns {Promise<void>} */
-async function mountApp() {
-  const bodyMatch = html.match(/<body>([\s\S]*)<\/body>/);
-  document.body.innerHTML = bodyMatch?.[1] ?? '';
-  document.body.querySelector('script')?.remove();
-  vi.resetModules();
-  await import('../../src/main.js');
-}
+import { indexHtml, mountApp } from '../helpers/mount-app.js';
 
 /** @param {string} id */
 function screenHidden(id) {
@@ -91,12 +78,12 @@ describe('privacy (HANDOFF section 2)', () => {
   it('never reproduces the real names from the reference screenshots', () => {
     const realNames = ['t00rx', 'roshaniayu', 'patricech', 'ericv'];
     for (const name of realNames) {
-      expect(html.toLowerCase()).not.toContain(name.toLowerCase());
+      expect(indexHtml.toLowerCase()).not.toContain(name.toLowerCase());
     }
   });
 
   it('uses no <img> tags for feed avatars (no real photos)', () => {
-    document.body.innerHTML = html.match(/<body>([\s\S]*)<\/body>/)?.[1] ?? '';
+    document.body.innerHTML = indexHtml.match(/<body>([\s\S]*)<\/body>/)?.[1] ?? '';
     const avatarImages = document.querySelectorAll('.avatar img');
     expect(avatarImages.length).toBe(0);
   });

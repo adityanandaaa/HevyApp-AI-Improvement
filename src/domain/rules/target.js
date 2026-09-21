@@ -7,7 +7,8 @@ import { workingWeight } from './working-weight.js';
 
 /**
  * @typedef {object} Target
- * @property {number} weightKg
+ * @property {number} weightKg the suggested weight for the next working sets
+ * @property {number} currentWeightKg the most recent session's working weight
  * @property {number} repsMin
  * @property {number} repsMax
  */
@@ -29,9 +30,9 @@ export function computeTarget(exercise, sessions, evaluation) {
   const [mostRecentLog] = lastNLogs(sessions, exercise.id, 1);
   if (!mostRecentLog) return null;
 
-  const currentWeight = workingWeight(mostRecentLog);
-  if (currentWeight === null) return null;
+  const currentWeightKg = workingWeight(mostRecentLog);
+  if (currentWeightKg === null) return null;
 
-  const weightKg = evaluation.allowed.includes('PUSH') ? currentWeight + PUSH_INCREMENT_KG : currentWeight;
-  return { weightKg, repsMin: exercise.targetReps.min, repsMax: exercise.targetReps.max };
+  const weightKg = evaluation.allowed.includes('PUSH') ? currentWeightKg + PUSH_INCREMENT_KG : currentWeightKg;
+  return { weightKg, currentWeightKg, repsMin: exercise.targetReps.min, repsMax: exercise.targetReps.max };
 }

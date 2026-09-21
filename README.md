@@ -33,16 +33,19 @@ npm test             # Vitest
 ```
 index.html            phone frame, dev toolbar shell, and all three screens
 src/
-  main.js              screen navigation + small cosmetic toggles (no rules)
+  main.js              screen navigation, cosmetic toggles, calls ui/render.js
   ui/
-    tokens.css          design tokens (section 10 of HANDOFF.md)
-    layout.css           phone frame and dev toolbar layout
-    components.css        shared button/card/icon/tab-bar styles
+    render.js            bridges evaluate()/reasoning into the DOM (no rules here)
+    signal-icons.js        SignalLabel -> sprite symbol id
+    tokens.css            design tokens (section 10 of HANDOFF.md)
+    layout.css              phone frame and dev toolbar layout
+    components.css            shared button/card/icon/tab-bar/Today's-Focus/
+                                direction-line styles
     screens/
-      home.css             Home tab
-      workout.css           Workout tab
-      log-workout.css        Log Workout screen
-    devtoolbar/            (added from M3, when scenarios exist to pick)
+      home.css                   Home tab
+      workout.css                  Workout tab
+      log-workout.css                Log Workout screen
+    devtoolbar/            (added from M4, when scenarios exist to pick)
   domain/                pure JS, no DOM, unit tested
     types.js               JSDoc typedefs (section 6 of HANDOFF.md)
     copy.js                 fixed strings, limits, templates (section 9)
@@ -55,16 +58,21 @@ src/
       pain.js                        R10
       evaluate.js                     the evaluate() entry point (R1-R10)
       target.js                        next push-weight suggestion
-  reasoning/               scripted reasoning provider (added from M3)
+      todays-focus.js                   R14 (push/hold/building lists)
+  reasoning/
+    provider.js            ReasoningProvider interface + enforceGuardrails()
+    scripted.js              prototype implementation: choose(), explain(),
+                               composeTodaysFocusCopy()
   data/
     exercises.js            MOCK Push Day routine (section 8)
     sessions.js              MOCK S-3/S-2/S-1 sessions (section 8)
-    scenarios.js               MOCK dev-toolbar scenarios (added from M3)
-  state/                     store (added from M3)
+    scenarios.js               MOCK dev-toolbar scenarios (added from M4)
+  state/                     store (added when signals need mutable state, M4)
 scripts/
   dev-server.js          zero-dependency static file server for local dev
 tests/
-  unit/                    domain and token tests
+  helpers/                 shared test setup (mount-app.js)
+  unit/                    domain and reasoning tests
   component/                DOM-level checks
   e2e/                       Playwright + axe (added in M7)
 ```
@@ -141,6 +149,29 @@ M2 additions (also flagged inline as `// INTERPRETATION: see HANDOFF section 7`)
   computes as block but its display stays history-building") and leaves the
   display precedence to the UI, not the rules engine.
 
+M3 additions:
+
+- **`ReasoningInput` gained an optional `target` field**, beyond HANDOFF
+  section 6's sketch. The scripted reason text states concrete weight
+  numbers ("stable at 40kg... consider 42kg"), so the scripted provider
+  needs the computed target alongside the evaluation to write that sentence.
+  A live model (M8) may not need the same field — M8 point 3 says to send
+  only the evaluation, exercise name, last set and trigger.
+- **Direction-line reason text uses each exercise's full name**, not
+  HANDOFF's colloquial shorthand for Incline ("Your incline has been
+  stable..."). A generic short-name deriver isn't specified, and hardcoding
+  per-exercise nicknames didn't seem worth the fragility for a 6-exercise
+  prototype (`src/reasoning/scripted.js`).
+- **Hold-state reason wording (for Shoulder Press, Seated Lateral Raise and
+  Single Arm Triceps Pushdown) is my own composition**, since HANDOFF gives
+  a full scripted example only for Incline. It follows the same "current
+  weight, why, what to watch for" shape as the given example and stays
+  within the 220-character direction-reason limit (checked by an automated
+  test across every Push Day exercise).
+- **The Today's Focus signal badge and Start Routine's own click handler
+  are wired generically** (`[data-start-routine]`, one per card variant)
+  rather than duplicating the Workout tab's Push Day button logic.
+
 ## Milestones
 
 Tracking `HANDOFF.md` section 11. Each milestone is reviewed before starting the
@@ -149,7 +180,7 @@ next.
 - [x] M0 — Scaffold
 - [x] M1 — Hevy shell
 - [x] M2 — Rules engine
-- [ ] M3 — Today's Focus and direction line
+- [x] M3 — Today's Focus and direction line
 - [ ] M4 — Signals
 - [ ] M5 — Pain
 - [ ] M6 — Recap

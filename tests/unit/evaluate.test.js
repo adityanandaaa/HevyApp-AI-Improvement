@@ -35,7 +35,7 @@ describe('golden tests (HANDOFF section 7)', () => {
     expect(evaluation.allowed).toContain('PUSH');
 
     const target = computeTarget(exerciseById('incline-bench-press'), PUSH_DAY_SESSIONS, evaluation);
-    expect(target).toEqual({ weightKg: 42, repsMin: 8, repsMax: 10 });
+    expect(target).toEqual({ weightKg: 42, currentWeightKg: 40, repsMin: 8, repsMax: 10 });
   });
 
   it('T2: Seated Lateral Raise history -> PUSH blocked with high_rpe; only HOLD and BACK_OFF allowed', () => {

@@ -1,7 +1,11 @@
-// Shell navigation only (M1): switching between the three static screens, and
-// small cosmetic toggles (tip banner, set-row checked state) that need no
-// rules engine. Real interactivity (rest timer countdown, signals, rules)
-// arrives in later milestones.
+// Screen navigation and small cosmetic toggles, plus (from M3) rendering
+// Today's Focus and the direction lines from the rules engine. Real
+// interactivity (signals, pain, a running rest timer) arrives in later
+// milestones.
+
+import { renderApp } from './ui/render.js';
+
+renderApp();
 
 /** @type {NodeListOf<HTMLElement>} */
 const screens = document.querySelectorAll('.screen');
@@ -34,6 +38,11 @@ for (const button of document.querySelectorAll('[data-nav]')) {
 document.getElementById('start-push-day')?.addEventListener('click', () => showScreen('log-workout'));
 document.getElementById('start-empty-workout')?.addEventListener('click', () => showScreen('log-workout'));
 document.getElementById('log-workout-back')?.addEventListener('click', () => showScreen('workout'));
+
+// Today's Focus's own Start Routine button (AC-7), rendered by ui/render.js.
+for (const button of document.querySelectorAll('[data-start-routine]')) {
+  button.addEventListener('click', () => showScreen('log-workout'));
+}
 
 document.getElementById('tip-banner-dismiss')?.addEventListener('click', () => {
   const banner = document.getElementById('tip-banner');
