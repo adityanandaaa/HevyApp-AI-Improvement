@@ -6,11 +6,598 @@
     <title>AI Training Coach (prototype)</title>
     <link rel="stylesheet" href="/src/ui/tokens.css" />
     <link rel="stylesheet" href="/src/ui/layout.css" />
+    <link rel="stylesheet" href="/src/ui/components.css" />
+    <link rel="stylesheet" href="/src/ui/screens/home.css" />
+    <link rel="stylesheet" href="/src/ui/screens/workout.css" />
+    <link rel="stylesheet" href="/src/ui/screens/log-workout.css" />
   </head>
   <body>
     <div class="page">
       <main class="phone-frame" id="phone-frame" aria-label="AI Training Coach prototype, phone screen">
-        <!-- Screens mount here in later milestones. -->
+        <!-- Outline icon sprite. Hevy publishes no icon set (HANDOFF section 10), so
+             these are approximations: 2pt stroke, rounded ends, no fill. -->
+        <svg style="display: none" aria-hidden="true">
+          <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></symbol>
+          <symbol id="icon-search" viewBox="0 0 24 24"
+            ><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35"
+          /></symbol>
+          <symbol id="icon-bell" viewBox="0 0 24 24"
+            ><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path
+              d="M13.73 21a2 2 0 01-3.46 0"
+          /></symbol>
+          <symbol id="icon-thumbs-up" viewBox="0 0 24 24"
+            ><path
+              d="M7 22V11m0 11H4a2 2 0 01-2-2v-6a2 2 0 012-2h3m3 11h8.6a2 2 0 002-1.7l1.2-7a2 2 0 00-2-2.3H14l1-4.5A2 2 0 0013 3l-6 8v10z"
+          /></symbol>
+          <symbol id="icon-comment" viewBox="0 0 24 24"
+            ><path
+              d="M21 11.5a8.4 8.4 0 01-8.5 8.5 8.4 8.4 0 01-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 01-.9-3.8A8.4 8.4 0 0112.5 3a8.4 8.4 0 018.5 8.5z"
+          /></symbol>
+          <symbol id="icon-share" viewBox="0 0 24 24"
+            ><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7" /><path d="M16 6l-4-4-4 4" /><path
+              d="M12 2v14"
+          /></symbol>
+          <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+          <symbol id="icon-folder-plus" viewBox="0 0 24 24"
+            ><path d="M21 19a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h5l2 3h7a2 2 0 012 2z" /><path
+              d="M12 11v6M9 14h6"
+          /></symbol>
+          <symbol id="icon-clipboard" viewBox="0 0 24 24"
+            ><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3a1 1 0 011-1h4a1 1 0 011 1v1" /><path
+              d="M9 11h6M9 15h6"
+          /></symbol>
+          <symbol id="icon-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></symbol>
+          <symbol id="icon-ellipsis" viewBox="0 0 24 24"
+            ><circle cx="5" cy="12" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle
+              cx="19"
+              cy="12"
+              r="1.4"
+          /></symbol>
+          <symbol id="icon-alarm" viewBox="0 0 24 24"
+            ><circle cx="12" cy="13" r="8" /><path d="M12 9v4l3 2" /><path d="M5 3L2 6M19 3l3 3" /></symbol>
+          <symbol id="icon-gauge" viewBox="0 0 24 24"
+            ><path d="M12 12l4-4" /><path d="M4.2 18a9 9 0 1115.6 0" /></symbol>
+          <symbol id="icon-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></symbol>
+          <symbol id="icon-dumbbell" viewBox="0 0 24 24"
+            ><path d="M6 7v10M18 7v10M2 10v4M22 10v4M6 12h12" /></symbol>
+          <symbol id="icon-home" viewBox="0 0 24 24"
+            ><path d="M3 11l9-8 9 8" /><path d="M5 10v10h5v-6h4v6h5V10" /></symbol>
+          <symbol id="icon-person" viewBox="0 0 24 24"
+            ><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></symbol>
+        </svg>
+
+        <!-- ===== Home tab ===== -->
+        <section class="screen" id="screen-home" data-screen="home">
+          <header class="top-bar">
+            <button class="top-bar__title-btn" type="button" aria-label="Home feed, switch">
+              <span class="top-bar__title">Home</span>
+              <svg class="icon icon--sm"><use href="#icon-chevron-down" /></svg>
+            </button>
+            <div class="top-bar__actions">
+              <button class="icon-btn" type="button" aria-label="Search"><svg class="icon"><use href="#icon-search" /></svg></button>
+              <button class="icon-btn" type="button" aria-label="Notifications">
+                <svg class="icon"><use href="#icon-bell" /></svg>
+              </button>
+            </div>
+          </header>
+          <div class="screen__body">
+            <!-- MOCK feed content. Neutral placeholders only: no real names or photos
+                 reproduced from the reference screenshots (HANDOFF section 2). -->
+            <article class="feed-post">
+              <div class="feed-post__header">
+                <div class="avatar avatar--placeholder" aria-hidden="true">
+                  <svg class="icon"><use href="#icon-person" /></svg>
+                </div>
+                <div>
+                  <p class="feed-post__author">You <span class="mock-tag">MOCK</span></p>
+                  <p class="feed-post__meta">2 days ago · Home gym</p>
+                </div>
+              </div>
+              <h3 class="feed-post__title">Push Day</h3>
+              <dl class="feed-post__stats">
+                <div><dt>Time</dt><dd>1h 12min</dd></div>
+                <div><dt>Volume</dt><dd>2.480 kg</dd></div>
+                <div><dt>Records</dt><dd>🏅 2</dd></div>
+              </dl>
+              <ul class="feed-post__exercises">
+                <li>3 sets Incline Bench Press (Dumbbell)</li>
+                <li>3 sets Shoulder Press</li>
+                <li>3 sets Seated Lateral Raise (Dumbbell)</li>
+              </ul>
+              <p class="feed-post__more">See 3 more exercises</p>
+              <div class="feed-post__actions">
+                <button class="icon-btn icon-btn--ghost" type="button" aria-label="Like">
+                  <svg class="icon"><use href="#icon-thumbs-up" /></svg>
+                </button>
+                <button class="icon-btn icon-btn--ghost" type="button" aria-label="Comment">
+                  <svg class="icon"><use href="#icon-comment" /></svg>
+                </button>
+                <button class="icon-btn icon-btn--ghost" type="button" aria-label="Share">
+                  <svg class="icon"><use href="#icon-share" /></svg>
+                </button>
+              </div>
+            </article>
+
+            <section class="suggested">
+              <div class="suggested__header">
+                <p class="section-label">Suggested Athletes <span class="mock-tag">MOCK</span></p>
+                <button class="link" type="button">
+                  <svg class="icon icon--sm"><use href="#icon-plus" /></svg>Invite a friend
+                </button>
+              </div>
+              <div class="suggested__list">
+                <div class="suggested-card">
+                  <button class="suggested-card__dismiss" type="button" aria-label="Dismiss suggestion">
+                    <svg class="icon icon--sm"><use href="#icon-x" /></svg>
+                  </button>
+                  <div class="avatar avatar--placeholder avatar--lg" aria-hidden="true">
+                    <svg class="icon"><use href="#icon-person" /></svg>
+                  </div>
+                  <p class="suggested-card__name">Athlete A</p>
+                </div>
+                <div class="suggested-card">
+                  <button class="suggested-card__dismiss" type="button" aria-label="Dismiss suggestion">
+                    <svg class="icon icon--sm"><use href="#icon-x" /></svg>
+                  </button>
+                  <div class="avatar avatar--placeholder avatar--lg" aria-hidden="true">
+                    <svg class="icon"><use href="#icon-person" /></svg>
+                  </div>
+                  <p class="suggested-card__name">Athlete B</p>
+                </div>
+                <div class="suggested-card">
+                  <button class="suggested-card__dismiss" type="button" aria-label="Dismiss suggestion">
+                    <svg class="icon icon--sm"><use href="#icon-x" /></svg>
+                  </button>
+                  <div class="avatar avatar--placeholder avatar--lg" aria-hidden="true">
+                    <svg class="icon"><use href="#icon-person" /></svg>
+                  </div>
+                  <p class="suggested-card__name">Athlete C</p>
+                </div>
+              </div>
+            </section>
+          </div>
+          <nav class="tab-bar" aria-label="Primary">
+            <button class="tab-bar__item" type="button" data-nav="home" aria-current="page">
+              <svg class="icon"><use href="#icon-home" /></svg>Home
+            </button>
+            <button class="tab-bar__item" type="button" data-nav="workout">
+              <svg class="icon"><use href="#icon-dumbbell" /></svg>Workout
+            </button>
+            <button class="tab-bar__item" type="button" data-nav="profile" disabled>
+              <svg class="icon"><use href="#icon-person" /></svg>Profile
+            </button>
+          </nav>
+        </section>
+
+        <!-- ===== Workout tab ===== -->
+        <section class="screen" id="screen-workout" data-screen="workout" hidden>
+          <header class="top-bar">
+            <button class="top-bar__title-btn" type="button" aria-label="Workout, switch">
+              <span class="top-bar__title">Workout</span>
+              <svg class="icon icon--sm"><use href="#icon-chevron-down" /></svg>
+            </button>
+            <span class="badge badge--pro">PRO</span>
+          </header>
+          <div class="screen__body">
+            <button class="btn-secondary btn-block" type="button" id="start-empty-workout">
+              <svg class="icon"><use href="#icon-plus" /></svg> Start Empty Workout
+            </button>
+
+            <div class="section-row">
+              <h2 class="section-title">Routines</h2>
+              <button class="icon-btn" type="button" aria-label="New routine folder">
+                <svg class="icon"><use href="#icon-folder-plus" /></svg>
+              </button>
+            </div>
+            <div class="quick-actions">
+              <button class="btn-secondary" type="button">
+                <svg class="icon"><use href="#icon-clipboard" /></svg> New Routine
+              </button>
+              <button class="btn-secondary" type="button">
+                <svg class="icon"><use href="#icon-search" /></svg> Explore
+              </button>
+            </div>
+
+            <div class="tip-banner" id="tip-banner">
+              <svg class="icon"><use href="#icon-clipboard" /></svg>
+              <p>Press and hold a routine to reorder</p>
+              <button type="button" aria-label="Dismiss tip" id="tip-banner-dismiss">
+                <svg class="icon icon--sm"><use href="#icon-x" /></svg>
+              </button>
+            </div>
+
+            <p class="section-label">My Routines (3)</p>
+
+            <!-- MOCK routine previews. Leg Day and Pull Day are static and inert
+                 (HANDOFF section 1): only Push Day starts a workout. -->
+            <article class="routine-card card routine-card--inert">
+              <div class="routine-card__header">
+                <h3>Leg Day <span aria-hidden="true">🦵</span></h3>
+                <button class="icon-btn" type="button" aria-label="Leg Day options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="routine-card__exercises">
+                Leg Extension (Machine), Seated Leg Curl (Machine), Hip Abduction (Machine), Hip Adduction (Machine)
+              </p>
+              <button class="btn-primary btn-block" type="button" disabled>Start Routine</button>
+            </article>
+
+            <article class="routine-card card routine-card--inert">
+              <div class="routine-card__header">
+                <h3>Pull Day <span aria-hidden="true">💪</span></h3>
+                <button class="icon-btn" type="button" aria-label="Pull Day options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="routine-card__exercises">
+                Lat Pulldown (Cable), Iso-Lateral Low Row, Face Pull, Bicep Curl (Cable), Hammer Curl (Dumbbell)
+              </p>
+              <button class="btn-primary btn-block" type="button" disabled>Start Routine</button>
+            </article>
+
+            <article class="routine-card card" id="push-day-card">
+              <div class="routine-card__header">
+                <h3>Push Day <span aria-hidden="true">💪</span></h3>
+                <button class="icon-btn" type="button" aria-label="Push Day options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="routine-card__exercises">
+                Incline Bench Press (Dumbbell), Shoulder Press, Seated Lateral Raise (Dumbbell), Chest Fly, Single Arm
+                Triceps Pushdown, Bodyweight Dips
+              </p>
+              <button class="btn-primary btn-block" type="button" id="start-push-day">Start Routine</button>
+            </article>
+          </div>
+          <nav class="tab-bar" aria-label="Primary">
+            <button class="tab-bar__item" type="button" data-nav="home">
+              <svg class="icon"><use href="#icon-home" /></svg>Home
+            </button>
+            <button class="tab-bar__item" type="button" data-nav="workout" aria-current="page">
+              <svg class="icon"><use href="#icon-dumbbell" /></svg>Workout
+            </button>
+            <button class="tab-bar__item" type="button" data-nav="profile" disabled>
+              <svg class="icon"><use href="#icon-person" /></svg>Profile
+            </button>
+          </nav>
+        </section>
+
+        <!-- ===== Log Workout ===== -->
+        <section class="screen" id="screen-log-workout" data-screen="log-workout" hidden>
+          <header class="top-bar top-bar--log">
+            <button class="icon-btn" type="button" id="log-workout-back" aria-label="Collapse Log Workout, back to Workout tab">
+              <svg class="icon"><use href="#icon-chevron-down" /></svg>
+            </button>
+            <span class="top-bar__title">Log Workout</span>
+            <button class="icon-btn" type="button" aria-label="Rest timer settings">
+              <svg class="icon"><use href="#icon-alarm" /></svg>
+            </button>
+            <button class="btn-primary btn-primary--pill" type="button" id="finish-workout">Finish</button>
+          </header>
+          <div class="screen__body screen__body--log">
+            <dl class="workout-stats">
+              <div><dt>Duration</dt><dd class="workout-stats__value workout-stats__value--accent">56s</dd></div>
+              <div><dt>Volume</dt><dd class="workout-stats__value">0 kg</dd></div>
+              <div><dt>Sets</dt><dd class="workout-stats__value">0</dd></div>
+            </dl>
+
+            <!-- MOCK Push Day content, from HANDOFF section 8. Exercise order and
+                 names follow Aditya's own list. Previous/KG/REPS come from
+                 session S-1 (the most recent logged session). -->
+            <article class="exercise-block" data-exercise="incline-bench-press" data-rest="120">
+              <div class="exercise-block__header">
+                <div class="avatar avatar--exercise" aria-hidden="true"><svg class="icon"><use href="#icon-dumbbell" /></svg></div>
+                <h3 class="exercise-block__name">Incline Bench Press (Dumbbell)</h3>
+                <button class="icon-btn" type="button" aria-label="Incline Bench Press options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="exercise-block__notes">Add notes here…</p>
+              <p class="exercise-block__rest"><svg class="icon icon--sm"><use href="#icon-alarm" /></svg> Rest Timer: 2min 0s</p>
+              <table class="set-table">
+                <thead>
+                  <tr>
+                    <th>Set</th>
+                    <th>Previous</th>
+                    <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
+                    <th>Reps</th>
+                    <th>RPE</th>
+                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="set-row" data-set="1">
+                    <td><span class="set-row__index">1</span></td>
+                    <td class="set-row__previous">30kg x 15</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="30" aria-label="Incline Bench Press set 1 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="15" aria-label="Incline Bench Press set 1 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Incline Bench Press set 1 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Incline Bench Press set 1 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="2">
+                    <td><span class="set-row__index">2</span></td>
+                    <td class="set-row__previous">40kg x 12</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="40" aria-label="Incline Bench Press set 2 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="12" aria-label="Incline Bench Press set 2 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Incline Bench Press set 2 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Incline Bench Press set 2 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="3">
+                    <td><span class="set-row__index">3</span></td>
+                    <td class="set-row__previous">40kg x 10</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="40" aria-label="Incline Bench Press set 3 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="10" aria-label="Incline Bench Press set 3 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Incline Bench Press set 3 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Incline Bench Press set 3 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn-secondary btn-block" type="button"><svg class="icon"><use href="#icon-plus" /></svg> Add Set</button>
+            </article>
+
+            <article class="exercise-block" data-exercise="shoulder-press" data-rest="120">
+              <div class="exercise-block__header">
+                <div class="avatar avatar--exercise" aria-hidden="true"><svg class="icon"><use href="#icon-dumbbell" /></svg></div>
+                <h3 class="exercise-block__name">Shoulder Press</h3>
+                <button class="icon-btn" type="button" aria-label="Shoulder Press options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="exercise-block__notes">Add notes here…</p>
+              <p class="exercise-block__rest"><svg class="icon icon--sm"><use href="#icon-alarm" /></svg> Rest Timer: 2min 0s</p>
+              <table class="set-table">
+                <thead>
+                  <tr>
+                    <th>Set</th>
+                    <th>Previous</th>
+                    <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
+                    <th>Reps</th>
+                    <th>RPE</th>
+                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="set-row" data-set="1">
+                    <td><span class="set-row__index">1</span></td>
+                    <td class="set-row__previous">24kg x 10</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="24" aria-label="Shoulder Press set 1 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="10" aria-label="Shoulder Press set 1 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Shoulder Press set 1 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Shoulder Press set 1 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="2">
+                    <td><span class="set-row__index">2</span></td>
+                    <td class="set-row__previous">24kg x 9</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="24" aria-label="Shoulder Press set 2 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="9" aria-label="Shoulder Press set 2 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Shoulder Press set 2 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Shoulder Press set 2 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="3">
+                    <td><span class="set-row__index">3</span></td>
+                    <td class="set-row__previous">24kg x 9</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="24" aria-label="Shoulder Press set 3 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="9" aria-label="Shoulder Press set 3 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Shoulder Press set 3 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Shoulder Press set 3 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn-secondary btn-block" type="button"><svg class="icon"><use href="#icon-plus" /></svg> Add Set</button>
+            </article>
+
+            <article class="exercise-block" data-exercise="seated-lateral-raise" data-rest="90">
+              <div class="exercise-block__header">
+                <div class="avatar avatar--exercise" aria-hidden="true"><svg class="icon"><use href="#icon-dumbbell" /></svg></div>
+                <h3 class="exercise-block__name">Seated Lateral Raise (Dumbbell)</h3>
+                <button class="icon-btn" type="button" aria-label="Seated Lateral Raise options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="exercise-block__notes">Add notes here…</p>
+              <p class="exercise-block__rest"><svg class="icon icon--sm"><use href="#icon-alarm" /></svg> Rest Timer: 1min 30s</p>
+              <table class="set-table">
+                <thead>
+                  <tr>
+                    <th>Set</th>
+                    <th>Previous</th>
+                    <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
+                    <th>Reps</th>
+                    <th>RPE</th>
+                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="set-row" data-set="1">
+                    <td><span class="set-row__index">1</span></td>
+                    <td class="set-row__previous">15kg x 15</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="15" aria-label="Seated Lateral Raise set 1 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="15" aria-label="Seated Lateral Raise set 1 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Seated Lateral Raise set 1 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Seated Lateral Raise set 1 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="2">
+                    <td><span class="set-row__index">2</span></td>
+                    <td class="set-row__previous">15kg x 15</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="15" aria-label="Seated Lateral Raise set 2 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="15" aria-label="Seated Lateral Raise set 2 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Seated Lateral Raise set 2 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Seated Lateral Raise set 2 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="3">
+                    <td><span class="set-row__index">3</span></td>
+                    <td class="set-row__previous">15kg x 15</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="15" aria-label="Seated Lateral Raise set 3 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="15" aria-label="Seated Lateral Raise set 3 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Seated Lateral Raise set 3 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Seated Lateral Raise set 3 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn-secondary btn-block" type="button"><svg class="icon"><use href="#icon-plus" /></svg> Add Set</button>
+            </article>
+
+            <article class="exercise-block" data-exercise="chest-fly" data-rest="90">
+              <div class="exercise-block__header">
+                <div class="avatar avatar--exercise" aria-hidden="true"><svg class="icon"><use href="#icon-dumbbell" /></svg></div>
+                <h3 class="exercise-block__name">Chest Fly</h3>
+                <button class="icon-btn" type="button" aria-label="Chest Fly options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="exercise-block__notes">Add notes here…</p>
+              <p class="exercise-block__rest"><svg class="icon icon--sm"><use href="#icon-alarm" /></svg> Rest Timer: 1min 30s</p>
+              <table class="set-table">
+                <thead>
+                  <tr>
+                    <th>Set</th>
+                    <th>Previous</th>
+                    <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
+                    <th>Reps</th>
+                    <th>RPE</th>
+                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="set-row" data-set="1">
+                    <td><span class="set-row__index">1</span></td>
+                    <td class="set-row__previous">20kg x 12</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="20" aria-label="Chest Fly set 1 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="12" aria-label="Chest Fly set 1 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Chest Fly set 1 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Chest Fly set 1 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="2">
+                    <td><span class="set-row__index">2</span></td>
+                    <td class="set-row__previous">20kg x 12</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="20" aria-label="Chest Fly set 2 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="12" aria-label="Chest Fly set 2 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Chest Fly set 2 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Chest Fly set 2 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="3">
+                    <td><span class="set-row__index">3</span></td>
+                    <td class="set-row__previous">20kg x 12</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="20" aria-label="Chest Fly set 3 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="12" aria-label="Chest Fly set 3 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Chest Fly set 3 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Chest Fly set 3 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn-secondary btn-block" type="button"><svg class="icon"><use href="#icon-plus" /></svg> Add Set</button>
+            </article>
+
+            <article class="exercise-block" data-exercise="triceps-pushdown" data-rest="60">
+              <div class="exercise-block__header">
+                <div class="avatar avatar--exercise" aria-hidden="true"><svg class="icon"><use href="#icon-dumbbell" /></svg></div>
+                <h3 class="exercise-block__name">Single Arm Triceps Pushdown</h3>
+                <button class="icon-btn" type="button" aria-label="Single Arm Triceps Pushdown options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="exercise-block__notes">Add notes here…</p>
+              <p class="exercise-block__rest"><svg class="icon icon--sm"><use href="#icon-alarm" /></svg> Rest Timer: 1min 0s</p>
+              <table class="set-table">
+                <thead>
+                  <tr>
+                    <th>Set</th>
+                    <th>Previous</th>
+                    <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
+                    <th>Reps</th>
+                    <th>RPE</th>
+                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="set-row" data-set="1">
+                    <td><span class="set-row__index">1</span></td>
+                    <td class="set-row__previous">12kg x 12</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="12" aria-label="Single Arm Triceps Pushdown set 1 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="12" aria-label="Single Arm Triceps Pushdown set 1 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Single Arm Triceps Pushdown set 1 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Single Arm Triceps Pushdown set 1 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="2">
+                    <td><span class="set-row__index">2</span></td>
+                    <td class="set-row__previous">12kg x 12</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="12" aria-label="Single Arm Triceps Pushdown set 2 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="12" aria-label="Single Arm Triceps Pushdown set 2 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Single Arm Triceps Pushdown set 2 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Single Arm Triceps Pushdown set 2 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="3">
+                    <td><span class="set-row__index">3</span></td>
+                    <td class="set-row__previous">12kg x 11</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="12" aria-label="Single Arm Triceps Pushdown set 3 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="11" aria-label="Single Arm Triceps Pushdown set 3 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Single Arm Triceps Pushdown set 3 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Single Arm Triceps Pushdown set 3 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn-secondary btn-block" type="button"><svg class="icon"><use href="#icon-plus" /></svg> Add Set</button>
+            </article>
+
+            <article class="exercise-block" data-exercise="bodyweight-dips" data-rest="90">
+              <div class="exercise-block__header">
+                <div class="avatar avatar--exercise" aria-hidden="true"><svg class="icon"><use href="#icon-dumbbell" /></svg></div>
+                <h3 class="exercise-block__name">Bodyweight Dips</h3>
+                <button class="icon-btn" type="button" aria-label="Bodyweight Dips options">
+                  <svg class="icon"><use href="#icon-ellipsis" /></svg>
+                </button>
+              </div>
+              <p class="exercise-block__notes">Add notes here…</p>
+              <p class="exercise-block__rest"><svg class="icon icon--sm"><use href="#icon-alarm" /></svg> Rest Timer: 1min 30s</p>
+              <table class="set-table">
+                <thead>
+                  <tr>
+                    <th>Set</th>
+                    <th>Previous</th>
+                    <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
+                    <th>Reps</th>
+                    <th>RPE</th>
+                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="set-row" data-set="1">
+                    <td><span class="set-row__index">1</span></td>
+                    <td class="set-row__previous">0kg x 10</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="0" aria-label="Bodyweight Dips set 1 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="10" aria-label="Bodyweight Dips set 1 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Bodyweight Dips set 1 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Bodyweight Dips set 1 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="2">
+                    <td><span class="set-row__index">2</span></td>
+                    <td class="set-row__previous">0kg x 10</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="0" aria-label="Bodyweight Dips set 2 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="10" aria-label="Bodyweight Dips set 2 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Bodyweight Dips set 2 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Bodyweight Dips set 2 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                  <tr class="set-row" data-set="3">
+                    <td><span class="set-row__index">3</span></td>
+                    <td class="set-row__previous">0kg x 9</td>
+                    <td><input class="set-input" type="text" inputmode="decimal" value="0" aria-label="Bodyweight Dips set 3 weight in kg" /></td>
+                    <td><input class="set-input" type="text" inputmode="numeric" value="9" aria-label="Bodyweight Dips set 3 reps" /></td>
+                    <td><button class="rpe-btn" type="button" aria-label="Bodyweight Dips set 3 RPE, not entered"><svg class="icon icon--sm"><use href="#icon-gauge" /></svg></button></td>
+                    <td><button class="check-btn" type="button" aria-pressed="false" aria-label="Mark Bodyweight Dips set 3 done"><svg class="icon"><use href="#icon-check" /></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn-secondary btn-block" type="button"><svg class="icon"><use href="#icon-plus" /></svg> Add Set</button>
+            </article>
+          </div>
+          <div class="rest-bar" id="rest-bar" hidden>
+            <button class="rest-bar__adjust" type="button" aria-label="Subtract 15 seconds">-15</button>
+            <span class="rest-bar__time" id="rest-bar-time">2:00</span>
+            <button class="rest-bar__adjust" type="button" aria-label="Add 15 seconds">+15</button>
+            <button class="btn-primary btn-primary--pill" type="button" id="rest-bar-skip">Skip</button>
+          </div>
+        </section>
       </main>
 
       <aside class="dev-toolbar" id="dev-toolbar" aria-label="Developer toolbar">
@@ -21,5 +608,6 @@
         </p>
       </aside>
     </div>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

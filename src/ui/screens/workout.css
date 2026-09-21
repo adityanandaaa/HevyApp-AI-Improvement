@@ -1,0 +1,66 @@
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
+.tip-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fbeea2;
+  color: #1c1c1d;
+  border-radius: var(--radius-card);
+  padding: 12px var(--margin);
+  margin-bottom: 16px;
+}
+
+.tip-banner p {
+  flex: 1;
+  margin: 0;
+  font-size: var(--fs-secondary);
+}
+
+.tip-banner button {
+  background: none;
+  border: none;
+  color: #1c1c1d;
+  cursor: pointer;
+  display: flex;
+}
+
+.tip-banner[hidden] {
+  display: none;
+}
+
+.routine-card {
+  margin-bottom: 16px;
+}
+
+.routine-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.routine-card__header h3 {
+  margin: 0;
+  font-size: var(--fs-exercise);
+  font-weight: 700;
+}
+
+.routine-card__exercises {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: var(--fs-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.routine-card--inert {
+  opacity: 0.7;
+}

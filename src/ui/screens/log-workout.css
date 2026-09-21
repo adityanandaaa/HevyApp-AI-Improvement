@@ -1,0 +1,191 @@
+.top-bar--log {
+  border-bottom: 1px solid var(--raised);
+}
+
+.workout-stats {
+  display: flex;
+  gap: 32px;
+  margin: 16px 0;
+}
+
+.workout-stats dt {
+  font-size: var(--fs-secondary);
+  color: var(--text-muted);
+  margin: 0 0 2px;
+}
+
+.workout-stats__value {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  margin: 0;
+}
+
+.workout-stats__value--accent {
+  color: var(--blue);
+}
+
+.exercise-block {
+  padding: 16px 0;
+  border-top: 1px solid var(--raised);
+}
+
+.exercise-block__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.exercise-block__name {
+  flex: 1;
+  margin: 0;
+  color: var(--blue);
+  font-size: var(--fs-exercise);
+  font-weight: 500;
+}
+
+.exercise-block__notes {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-secondary);
+}
+
+.exercise-block__rest {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue);
+  font-size: var(--fs-secondary);
+  margin: 10px 0;
+}
+
+.set-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.set-table th {
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 400;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.set-table th:first-child {
+  text-align: left;
+}
+
+.set-table th span,
+.set-table th {
+  vertical-align: middle;
+}
+
+.set-row td {
+  padding: 4px;
+  text-align: center;
+  transition: background-color var(--t-card);
+}
+
+.set-row__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-btn);
+  background: var(--raised);
+  font-weight: 700;
+}
+
+.set-row__previous {
+  color: var(--text-muted);
+  font-size: var(--fs-secondary);
+}
+
+.set-input {
+  width: 100%;
+  min-height: 38px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--raised);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-body);
+  text-align: center;
+  font-family: inherit;
+}
+
+.rpe-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-btn);
+  background: var(--raised);
+  border: none;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.check-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-btn);
+  background: var(--raised);
+  border: none;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.check-btn[aria-pressed='true'] {
+  background: var(--done-check);
+  color: var(--text);
+}
+
+.set-row--done td {
+  background: var(--done-row);
+}
+
+.set-row--done .set-input {
+  background: var(--done-cell);
+  border-color: var(--done-cell);
+}
+
+.rest-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px var(--margin) calc(14px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  border-top: 2px solid var(--blue);
+}
+
+.rest-bar[hidden] {
+  display: none;
+}
+
+.rest-bar__adjust {
+  min-height: var(--tap);
+  padding: 0 16px;
+  border-radius: var(--radius-btn-lg);
+  background: var(--raised);
+  border: none;
+  color: var(--text);
+  font-size: var(--fs-secondary);
+  cursor: pointer;
+}
+
+.rest-bar__time {
+  font-size: var(--fs-timer);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  flex: 1;
+  text-align: center;
+}
