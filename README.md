@@ -34,18 +34,22 @@ npm test             # Vitest
 index.html            phone frame, dev toolbar shell, and all three screens
 src/
   main.js              screen navigation, cosmetic toggles, calls ui/render.js
+                         and ui/log-workout.js
   ui/
     render.js            bridges evaluate()/reasoning into the DOM (no rules here)
-    signal-icons.js        SignalLabel -> sprite symbol id
-    tokens.css            design tokens (section 10 of HANDOFF.md)
-    layout.css              phone frame and dev toolbar layout
-    components.css            shared button/card/icon/tab-bar/Today's-Focus/
-                                direction-line styles
+    log-workout.js         signal card, chips, Why? sheet, rest timer (M4)
+    signal-icons.js          SignalLabel -> sprite symbol id
+    timing.js                  TIMING constants (section 9)
+    tokens.css                  design tokens (section 10 of HANDOFF.md)
+    layout.css                    phone frame and dev toolbar layout
+    components.css                  shared button/card/icon/tab-bar/
+                                      Today's-Focus/direction-line/docked-card/
+                                      chips/sheet styles
     screens/
-      home.css                   Home tab
-      workout.css                  Workout tab
-      log-workout.css                Log Workout screen
-    devtoolbar/            (added from M4, when scenarios exist to pick)
+      home.css                         Home tab
+      workout.css                        Workout tab
+      log-workout.css                      Log Workout screen + signal card
+    devtoolbar/            (not yet built — see Interpretations)
   domain/                pure JS, no DOM, unit tested
     types.js               JSDoc typedefs (section 6 of HANDOFF.md)
     copy.js                 fixed strings, limits, templates (section 9)
@@ -59,15 +63,19 @@ src/
       evaluate.js                     the evaluate() entry point (R1-R10)
       target.js                        next push-weight suggestion
       todays-focus.js                   R14 (push/hold/building lists)
+      signal-trigger.js                   R12 (reactive HOLD/BACK_OFF triggers)
+      chips.js                             R11 (reason-chip eligibility)
   reasoning/
     provider.js            ReasoningProvider interface + enforceGuardrails()
     scripted.js              prototype implementation: choose(), explain(),
-                               composeTodaysFocusCopy()
+                               composeTodaysFocusCopy(), composeWhySheet()
   data/
     exercises.js            MOCK Push Day routine (section 8)
     sessions.js              MOCK S-3/S-2/S-1 sessions (section 8)
-    scenarios.js               MOCK dev-toolbar scenarios (added from M4)
-  state/                     store (added when signals need mutable state, M4)
+    scenarios.js               MOCK dev-toolbar scenarios (not yet built)
+  state/
+    store.js                 mutable session-scoped state: today's logged
+                               sets, the active signal/chips, the rest timer
 scripts/
   dev-server.js          zero-dependency static file server for local dev
 tests/
@@ -172,6 +180,40 @@ M3 additions:
   are wired generically** (`[data-start-routine]`, one per card variant)
   rather than duplicating the Workout tab's Push Day button logic.
 
+M4 additions:
+
+- **RPE is a plain text input pre-filled from history, not a gauge/wheel
+  picker.** The screenshots only show a gauge icon before a value is
+  entered; mockup 4 shows plain numerals once sets are checked, and section 9
+  gives no spec for a custom control beyond that icon. A text input matching
+  the KG/REPS styling is simplest to build reliably and lets a reviewer
+  change RPE by hand to trigger HOLD/BACK OFF while testing.
+- **No dev-toolbar scenario picker yet, and PR/ADAPT/PROGRESS are
+  unreachable.** Re-reading HANDOFF section 8's five scenarios closely: all
+  but "Pain" (scenario 3, needs the Pain button, M5) are reachable by hand
+  through the exact rules and mock data already built — none of them
+  actually requires scripted PR/ADAPT/PROGRESS overrides. Per R12, those
+  three labels are "scripted in scenarios" with no scenario system built,
+  so they're not reachable in this prototype yet. Building the scenario
+  picker (a QA convenience that pre-checks sets to jump to an interesting
+  moment, not new rules) is deferred — it doesn't block any M4 acceptance
+  criterion, and section 10 groups it with the rest of the dev toolbar
+  (text size, reduced motion, locale), most of which is M7's job anyway.
+- **The BACK_OFF `set_checked` reason and the whole Why? sheet's BACK_OFF
+  wording are my own composition.** HANDOFF's only scripted `set_checked`
+  example (section 8, scenario 2) covers the RPE/HOLD case, reused verbatim;
+  the rep-drop/BACK_OFF case follows the same shape.
+- **The signal card always shows a Dismiss button whenever it's visible**
+  (signal, chips, or both), since AC-16 lists Dismiss as one of the three
+  ways the card goes away regardless of what's inside it.
+- **The docked card grows from normal document flow, not a floating
+  overlay + manual bottom padding.** AC-13 asks for bottom padding "so no
+  set row stays hidden" — that's written for a card that floats over the
+  content. This card is a flex-column sibling of the scrollable exercise
+  list, so appearing shrinks the scrollable area instead of covering it;
+  no row can end up hidden behind it, which satisfies the same intent
+  without the padding-matching machinery the AC's literal mechanism implies.
+
 ## Milestones
 
 Tracking `HANDOFF.md` section 11. Each milestone is reviewed before starting the
@@ -181,7 +223,7 @@ next.
 - [x] M1 — Hevy shell
 - [x] M2 — Rules engine
 - [x] M3 — Today's Focus and direction line
-- [ ] M4 — Signals
+- [x] M4 — Signals
 - [ ] M5 — Pain
 - [ ] M6 — Recap
 - [ ] M7 — Accessibility and QA

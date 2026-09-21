@@ -4,7 +4,7 @@
 /** @typedef {import('../domain/rules/todays-focus.js').TodaysFocusData} TodaysFocusData */
 
 import { enforceGuardrails } from './provider.js';
-import { COPY, LIMITS } from '../domain/copy.js';
+import { COPY, LIMITS, displayLabel } from '../domain/copy.js';
 
 // The prototype implementation of ReasoningProvider (HANDOFF section 5, rule
 // 6): wording is scripted here, not model-generated, but through the same
@@ -64,12 +64,34 @@ function holdReason(exerciseName, target, isHighRpe) {
 }
 
 /**
+ * R12/section 8 scenario 2's exact scripted example: "Set 3 was RPE 9. Stay
+ * at 40kg, no need to add a set today."
+ * @param {number} setNumber
+ * @param {import('../domain/types.js').SetEntry} lastSet
+ * @returns {string}
+ */
+function highRpeSetCheckedReason(setNumber, lastSet) {
+  return `Set ${setNumber} was RPE ${lastSet.rpe}. Stay at ${lastSet.weightKg}kg, no need to add a set today.`;
+}
+
+/**
+ * INTERPRETATION: see HANDOFF section 7 (R12). HANDOFF gives no scripted
+ * example for the rep-drop trigger, only for the RPE trigger above.
+ * @param {number} setNumber
+ * @param {import('../domain/types.js').SetEntry} lastSet
+ * @returns {string}
+ */
+function repDropSetCheckedReason(setNumber, lastSet) {
+  return `Set ${setNumber} dropped to ${lastSet.reps} reps at ${lastSet.weightKg}kg. Consider backing off or stopping here.`;
+}
+
+/**
  * @param {ReasoningInput} input
  * @param {SignalLabel} label
  * @returns {string}
  */
 export function explain(input, label) {
-  const { evaluation, exercise, target } = input;
+  const { evaluation, exercise, target, lastSet, setNumber } = input;
 
   if (evaluation.historyBuilding) {
     return COPY.historyBuilding(evaluation.historyCount);
@@ -77,6 +99,10 @@ export function explain(input, label) {
 
   if (evaluation.painEffect === 'block' && evaluation.painSource) {
     return COPY.painPrimaryOverlap(evaluation.painSource);
+  }
+
+  if (input.trigger === 'set_checked' && lastSet && setNumber) {
+    return label === 'HOLD' ? highRpeSetCheckedReason(setNumber, lastSet) : repDropSetCheckedReason(setNumber, lastSet);
   }
 
   const isHighRpe = evaluation.blocked.some((b) => b.label === 'PUSH' && b.why === 'high_rpe');
@@ -189,5 +215,73 @@ export function composeTodaysFocusCopy(data) {
     homeTeaser,
     workoutExpect: composeWorkoutExpect(data),
     workoutTackle: composeWorkoutTackle(data),
+  };
+}
+
+/**
+ * @param {import('../domain/types.js').SetEntry[]} sets
+ * @returns {string}
+ */
+function describeSetsToday(sets) {
+  const parts = sets.map((s) => `${s.weightKg}kg × ${s.reps}`);
+  const rpes = sets.map((s) => String(s.rpe));
+  const setLabel = sets.length === 1 ? 'Set 1' : `Sets 1 to ${sets.length}`;
+  const rpeLabel = rpes.length === 1 ? `RPE ${rpes[0]}` : `RPE ${joinNames(rpes)}`;
+  return `${setLabel}: ${parts.join(', ')} at ${rpeLabel}.`;
+}
+
+/**
+ * @typedef {object} WhySheetCopy
+ * @property {string} title
+ * @property {string} whatIDid
+ * @property {string} calculated
+ * @property {string} aiInterpretation
+ * @property {string} recommendation
+ */
+
+/**
+ * AC-18: the Why? sheet's four labelled blocks, in order: What I did
+ * (recorded facts), Calculated (metrics), AI interpretation, Recommendation.
+ * INTERPRETATION: see HANDOFF section 7. HANDOFF's own worked example
+ * (mockup 5) covers only the RPE/HOLD case; the BACK_OFF wording is mine,
+ * following the same shape.
+ * @param {ReasoningInput} input
+ * @param {SignalLabel} label
+ * @param {import('../domain/types.js').SetEntry[]} setsToday this exercise's
+ *   working sets logged today so far, in order (including the one just checked)
+ * @returns {WhySheetCopy}
+ */
+export function composeWhySheet(input, label, setsToday) {
+  const title = `Why ${displayLabel(label)}?`;
+  const whatIDid = describeSetsToday(setsToday);
+  const lastSet = setsToday[setsToday.length - 1];
+
+  if (label === 'HOLD' && lastSet) {
+    const first = setsToday[0]?.rpe;
+    const calculated =
+      setsToday.length > 1
+        ? `RPE rose from ${first} to ${lastSet.rpe} across the ${setsToday.length} sets.`
+        : `The set was RPE ${lastSet.rpe}.`;
+    return {
+      title,
+      whatIDid,
+      calculated,
+      aiInterpretation: 'Effort is climbing within the session, so more load or sets are not advised.',
+      recommendation: `Hold at ${lastSet.weightKg}kg. No need to add a set today.`,
+    };
+  }
+
+  const previous = lastSet
+    ? [...setsToday.slice(0, -1)].reverse().find((s) => s.weightKg === lastSet.weightKg)
+    : undefined;
+  return {
+    title,
+    whatIDid,
+    calculated:
+      previous && lastSet
+        ? `Reps dropped from ${previous.reps} to ${lastSet.reps} at ${lastSet.weightKg}kg.`
+        : 'Reps dropped from the previous set at this weight.',
+    aiInterpretation: 'A rep drop like this suggests fatigue is building.',
+    recommendation: `Back off the weight or stop here for ${input.exercise.name}.`,
   };
 }

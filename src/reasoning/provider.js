@@ -14,12 +14,19 @@
  * HOLD if HOLD is allowed, otherwise by no signal (null). Applies to every
  * provider, scripted or live, so a live model (M8) can't violate the
  * guardrails computed by evaluate() either.
+ *
+ * `null` is deliberately left untouched: it means the provider chose to show
+ * nothing (AC-12, "otherwise nothing appears"), which is a different case
+ * from choosing a label that turned out not to be allowed. Coercing null to
+ * HOLD would make a signal appear on every set checked, since HOLD is
+ * allowed for almost every evaluation.
  * @param {Evaluation} evaluation
  * @param {SignalLabel | null} label
  * @returns {SignalLabel | null}
  */
 export function enforceGuardrails(evaluation, label) {
-  if (label !== null && evaluation.allowed.includes(label)) return label;
+  if (label === null) return null;
+  if (evaluation.allowed.includes(label)) return label;
   if (evaluation.allowed.includes('HOLD')) return 'HOLD';
   return null;
 }

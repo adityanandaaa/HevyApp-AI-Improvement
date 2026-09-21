@@ -27,3 +27,6 @@ test-results
 *.njsproj
 *.sln
 *.sw?
+
+# Word lock files (created when docs/*.docx is open elsewhere)
+~$*.docx

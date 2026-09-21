@@ -1,11 +1,12 @@
-// Screen navigation and small cosmetic toggles, plus (from M3) rendering
-// Today's Focus and the direction lines from the rules engine. Real
-// interactivity (signals, pain, a running rest timer) arrives in later
-// milestones.
+// Screen navigation and small cosmetic toggles, plus rendering Today's Focus
+// and the direction lines (M3), and the signal card / rest timer / Why?
+// sheet interactions (M4). Pain (M5) and a real Recap (M6) arrive later.
 
 import { renderApp } from './ui/render.js';
+import { initLogWorkoutInteractions } from './ui/log-workout.js';
 
 renderApp();
+initLogWorkoutInteractions();
 
 /** @type {NodeListOf<HTMLElement>} */
 const screens = document.querySelectorAll('.screen');
@@ -48,38 +49,5 @@ document.getElementById('tip-banner-dismiss')?.addEventListener('click', () => {
   const banner = document.getElementById('tip-banner');
   if (banner) banner.hidden = true;
 });
-
-// Demo-only: toggling a set's check button shows the rest bar styled like
-// Hevy's own (docs/reference/hevy-log-resting.png). The displayed time is the
-// exercise's configured rest duration, not a real countdown — the rest timer
-// itself is Hevy's, not something this feature builds or owns.
-const restBar = document.getElementById('rest-bar');
-const restBarTime = document.getElementById('rest-bar-time');
-
-/** @param {number} totalSeconds */
-function formatRestTime(totalSeconds) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
-
-for (const checkButton of document.querySelectorAll('.check-btn')) {
-  checkButton.addEventListener('click', () => {
-    const row = checkButton.closest('.set-row');
-    const exerciseBlock = checkButton.closest('.exercise-block');
-    if (!(row instanceof HTMLElement) || !(exerciseBlock instanceof HTMLElement)) return;
-
-    const nowDone = checkButton.getAttribute('aria-pressed') !== 'true';
-    checkButton.setAttribute('aria-pressed', String(nowDone));
-    row.classList.toggle('set-row--done', nowDone);
-
-    const anyChecked = document.querySelector('.check-btn[aria-pressed="true"]') !== null;
-    if (restBar) restBar.hidden = !anyChecked;
-    if (nowDone && restBarTime) {
-      const restSeconds = Number(exerciseBlock.dataset.rest ?? '0');
-      restBarTime.textContent = formatRestTime(restSeconds);
-    }
-  });
-}
 
 export {};

@@ -77,6 +77,10 @@
  *   scripted provider needs the computed target alongside the evaluation. A
  *   live model (M8) may not need this same field — M8 point 3 sends only the
  *   evaluation, exercise name, last set and trigger.
+ * @property {number} [setNumber] INTERPRETATION: also not in section 6. The
+ *   scripted `set_checked` wording states which set triggered it (section 8
+ *   scenario 2: "Set 3 was RPE 9..."), which needs the set's 1-based position
+ *   in today's log for this exercise.
  */
 
 export {};

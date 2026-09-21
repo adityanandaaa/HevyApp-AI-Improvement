@@ -51,6 +51,8 @@ describe('screen navigation', () => {
   });
 
   it('shows the rest bar and marks a row done when a set is checked', () => {
+    // Full signal-card and rest-timer behaviour is covered in signals.test.js;
+    // this just checks the checkbox mechanics still work post-M4.
     const checkButton = /** @type {HTMLButtonElement} */ (
       document.querySelector('.exercise-block[data-exercise="incline-bench-press"] .set-row[data-set="1"] .check-btn')
     );
@@ -70,7 +72,6 @@ describe('screen navigation', () => {
 
     expect(checkButton.getAttribute('aria-pressed')).toBe('false');
     expect(row?.classList.contains('set-row--done')).toBe(false);
-    expect(restBar?.hidden).toBe(true);
   });
 });
 
