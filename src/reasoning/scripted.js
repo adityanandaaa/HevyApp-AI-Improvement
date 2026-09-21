@@ -90,6 +90,32 @@ function repDropSetCheckedReason(setNumber, lastSet, locale) {
 }
 
 /**
+ * INTERPRETATION: see HANDOFF section 7 (R12) and README "Interpretations" —
+ * added so exceeding the suggested target is celebrated, not treated like an
+ * unexplained change.
+ * @param {number} setNumber
+ * @param {import('../domain/types.js').SetEntry} lastSet
+ * @param {Target | null} target
+ * @param {import('../domain/copy.js').Locale} locale
+ * @returns {string}
+ */
+function progressSetCheckedReason(setNumber, lastSet, target, locale) {
+  const targetText = target ? `, past the ${formatNumber(target.weightKg, locale)}kg target` : '';
+  return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg${targetText}. Nice progress!`;
+}
+
+/**
+ * INTERPRETATION: see HANDOFF section 7 (R12) and README "Interpretations".
+ * @param {number} setNumber
+ * @param {import('../domain/types.js').SetEntry} lastSet
+ * @param {import('../domain/copy.js').Locale} locale
+ * @returns {string}
+ */
+function prSetCheckedReason(setNumber, lastSet, locale) {
+  return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg — your heaviest yet on this lift. Great work!`;
+}
+
+/**
  * @param {ReasoningInput} input
  * @param {SignalLabel} label
  * @returns {string}
@@ -106,9 +132,10 @@ export function explain(input, label) {
   }
 
   if (input.trigger === 'set_checked' && lastSet && setNumber) {
-    return label === 'HOLD'
-      ? highRpeSetCheckedReason(setNumber, lastSet, locale)
-      : repDropSetCheckedReason(setNumber, lastSet, locale);
+    if (label === 'HOLD') return highRpeSetCheckedReason(setNumber, lastSet, locale);
+    if (label === 'PROGRESS') return progressSetCheckedReason(setNumber, lastSet, target ?? null, locale);
+    if (label === 'PR') return prSetCheckedReason(setNumber, lastSet, locale);
+    return repDropSetCheckedReason(setNumber, lastSet, locale);
   }
 
   const isHighRpe = evaluation.blocked.some((b) => b.label === 'PUSH' && b.why === 'high_rpe');
@@ -278,6 +305,29 @@ export function composeWhySheet(input, label, setsToday) {
       calculated,
       aiInterpretation: 'Effort is climbing within the session, so more load or sets are not advised.',
       recommendation: `Hold at ${formatNumber(lastSet.weightKg, locale)}kg. No need to add a set today.`,
+    };
+  }
+
+  if (label === 'PROGRESS' && lastSet) {
+    const target = input.target;
+    return {
+      title,
+      whatIDid,
+      calculated: target
+        ? `This set was ${formatNumber(lastSet.weightKg, locale)}kg, above the ${formatNumber(target.weightKg, locale)}kg target.`
+        : `This set was ${formatNumber(lastSet.weightKg, locale)}kg.`,
+      aiInterpretation: "Going past the suggested target is a good sign you're ready for more.",
+      recommendation: 'Recover well, then consider pushing further next session.',
+    };
+  }
+
+  if (label === 'PR' && lastSet) {
+    return {
+      title,
+      whatIDid,
+      calculated: `This set was ${formatNumber(lastSet.weightKg, locale)}kg — your heaviest yet on this lift.`,
+      aiInterpretation: 'A new heaviest weight is a strong signal of progress.',
+      recommendation: 'Log it and recover well before chasing another PR.',
     };
   }
 

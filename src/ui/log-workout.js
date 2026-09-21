@@ -6,7 +6,7 @@ import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
 import { CHIP_LABELS, COPY, displayLabel } from '../domain/copy.js';
 import { shouldShowChips, chipsHeadingKind } from '../domain/rules/chips.js';
 import { evaluate } from '../domain/rules/evaluate.js';
-import { lastNLogs } from '../domain/rules/history.js';
+import { allTimeMaxWorkingWeight, lastNLogs } from '../domain/rules/history.js';
 import { reactiveSignal } from '../domain/rules/signal-trigger.js';
 import { computeTarget } from '../domain/rules/target.js';
 import { workingWeight } from '../domain/rules/working-weight.js';
@@ -198,13 +198,15 @@ function hideDockedCard() {
  */
 function computeSignal(exercise, checkedSet, setNumber) {
   const priorSets = setsLoggedBefore(exercise.id, setNumber);
-  const candidate = reactiveSignal(checkedSet, priorSets);
   const evaluateInput = buildEvaluateInput();
   const evaluation = evaluate(evaluateInput, exercise.id);
+  const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
+  const allTimeMaxWeightKg = allTimeMaxWorkingWeight(evaluateInput.sessions, exercise.id);
+
+  const candidate = reactiveSignal(checkedSet, priorSets, { target, allTimeMaxWeightKg });
   const label = enforceGuardrails(evaluation, candidate);
   if (!label) return null;
 
-  const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
   const reason = explain(
     { trigger: 'set_checked', exercise, evaluation, lastSet: checkedSet, target, setNumber, locale: state.locale },
     label,

@@ -202,17 +202,25 @@ M4 additions:
   gives no spec for a custom control beyond that icon. A text input matching
   the KG/REPS styling is simplest to build reliably and lets a reviewer
   change RPE by hand to trigger HOLD/BACK OFF while testing.
-- **No dev-toolbar scenario picker yet, and PR/ADAPT/PROGRESS are
-  unreachable.** Re-reading HANDOFF section 8's five scenarios closely: all
-  but "Pain" (scenario 3, needs the Pain button, M5) are reachable by hand
-  through the exact rules and mock data already built — none of them
-  actually requires scripted PR/ADAPT/PROGRESS overrides. Per R12, those
-  three labels are "scripted in scenarios" with no scenario system built,
-  so they're not reachable in this prototype yet. Building the scenario
-  picker (a QA convenience that pre-checks sets to jump to an interesting
-  moment, not new rules) is deferred — it doesn't block any M4 acceptance
-  criterion, and section 10 groups it with the rest of the dev toolbar
-  (text size, reduced motion, locale), most of which is M7's job anyway.
+- **No dev-toolbar scenario picker, and ADAPT is unreachable.**
+  Re-reading HANDOFF section 8's five scenarios closely: all but "Pain"
+  (scenario 3, needs the Pain button, M5) are reachable by hand through the
+  exact rules and mock data already built. Per R12, PR/ADAPT/PROGRESS start
+  as "scripted in scenarios" with no scenario system built — PROGRESS and PR
+  later got a real reactive rule instead (see below, and `docs/DECISIONS.md`),
+  so ADAPT is the only one still unreachable. Building the scenario picker
+  (a QA convenience that pre-checks sets to jump to an interesting moment,
+  not new rules) stays deferred — it doesn't block any acceptance criterion,
+  and section 10 groups it with the rest of the dev toolbar (text size,
+  reduced motion, locale), which M7 built.
+- **Checking a set above the target celebrates it (PROGRESS/PR) instead of
+  only asking why the weight changed.** This revises a HANDOFF "do not
+  reopen" decision (section 3: chips show "every time" a weight differs) —
+  Aditya asked for it live, after the original behaviour felt like being
+  interrogated for doing well. The chips still appear every time per that
+  rule; a celebratory signal now appears above them when the weight is
+  higher than suggested. Full reasoning and the two declined alternatives
+  are in `docs/DECISIONS.md`.
 - **The BACK_OFF `set_checked` reason and the whole Why? sheet's BACK_OFF
   wording are my own composition.** HANDOFF's only scripted `set_checked`
   example (section 8, scenario 2) covers the RPE/HOLD case, reused verbatim;
@@ -283,8 +291,9 @@ M7 additions:
   part of the dev toolbar M7 actually needs), but the scenario picker
   itself remains a QA convenience the reviewer doesn't strictly need —
   every state HANDOFF's five scenarios describe is reachable by hand in
-  Log Workout, as M4's note explains. PR/ADAPT/PROGRESS accordingly stay
-  unreachable (R12: they're "scripted in scenarios").
+  Log Workout, as M4's note explains. (PR/ADAPT/PROGRESS were unreachable
+  at M7 time; PROGRESS/PR later got a real trigger — see `docs/DECISIONS.md`.
+  ADAPT is still scenario-only.)
 - **`--blue-fill`, a measured-darker shade of `--blue`, backs every
   primary-button/pill fill (white label text).** Automated axe testing
   found that white text on `--blue` at 16px is 3.4:1 — HANDOFF's own
@@ -349,7 +358,7 @@ needs Aditya, either on a real device or by eye.
 | AC-8, AC-9 | ✅ | `todays-focus-render.test.js` + `scripted-signals.test.js` (length) |
 | AC-10 | 👁 | By construction — `render.js` only reads `evaluate()`/`computeTarget()`, never writes to a KG/REPS/RPE input |
 | AC-11 | ✅ | `todays-focus-render.test.js` — Dips shows the history-building line |
-| AC-12 | ⚠️ | Only 2 of the 7 triggers are implemented (HOLD on RPE>=9, BACK_OFF on a rep drop — R12's stated default policy). PR/ADAPT/PROGRESS need a scenario system that isn't built (see Interpretations) |
+| AC-12 | ⚠️ | 4 of 7 triggers are implemented: HOLD (RPE>=9), BACK_OFF (rep drop), and — added after live feedback, see `docs/DECISIONS.md` — PROGRESS/PR (exceeding the target/all-time max). ADAPT alone still needs a scenario system that isn't built |
 | AC-13 | ✅ | `docked-card` CSS (flex-column, 40% max-height, docks above the rest bar) + axe scan |
 | AC-14 | ✅ | `signals.test.js` — appears after the signal delay, well under 1s; fades over `--t-card` (200ms) |
 | AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order |

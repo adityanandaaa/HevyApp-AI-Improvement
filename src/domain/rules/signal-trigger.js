@@ -1,9 +1,12 @@
 /** @typedef {import('../types.js').SetEntry} SetEntry */
+/** @typedef {import('../types.js').SignalLabel} SignalLabel */
+/** @typedef {import('./target.js').Target} Target */
 
-// R12: the prototype's default policy covers two reactive triggers, checked
-// against the set just logged. Every other signal (PR, ADAPT, PROGRESS) is
-// scripted in scenarios, which this prototype doesn't build yet — see
-// README "Interpretations".
+// R12: the prototype's default policy. HOLD and BACK_OFF are HANDOFF's own
+// two (section 7); PROGRESS and PR were added after Aditya tried pushing
+// past the suggested target and got asked "why did you change the weight?"
+// instead of being congratulated — see README "Interpretations". ADAPT is
+// still scripted-in-scenarios only (no reactive trigger fits it).
 
 /** Confirmed by Aditya (also used by the push gate, R5/R6). */
 const HIGH_RPE_THRESHOLD = 9;
@@ -12,14 +15,27 @@ const HIGH_RPE_THRESHOLD = 9;
 const REP_DROP_THRESHOLD = 2;
 
 /**
+ * @typedef {object} ReactiveSignalContext
+ * @property {Target | null} target today's suggested target for this exercise
+ * @property {number | null} allTimeMaxWeightKg the heaviest working weight
+ *   ever logged for this exercise, across every completed session
+ */
+
+/**
  * @param {SetEntry} checkedSet the set just checked
  * @param {SetEntry[]} priorSetsToday this exercise's working sets logged
  *   earlier today, in order, NOT including the one just checked
- * @returns {'HOLD' | 'BACK_OFF' | null}
+ * @param {ReactiveSignalContext} context
+ * @returns {SignalLabel | null}
  */
-export function reactiveSignal(checkedSet, priorSetsToday) {
+export function reactiveSignal(checkedSet, priorSetsToday, context) {
   if (checkedSet.rpe >= HIGH_RPE_THRESHOLD) {
     return 'HOLD';
+  }
+
+  if (context.target && checkedSet.weightKg > context.target.weightKg) {
+    const isAllTimeHeaviest = context.allTimeMaxWeightKg !== null && checkedSet.weightKg > context.allTimeMaxWeightKg;
+    return isAllTimeHeaviest ? 'PR' : 'PROGRESS';
   }
 
   const previousAtSameWeight = [...priorSetsToday].reverse().find((set) => set.weightKg === checkedSet.weightKg);

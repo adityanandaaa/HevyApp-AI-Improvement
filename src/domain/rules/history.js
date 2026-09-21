@@ -1,6 +1,8 @@
 /** @typedef {import('../types.js').Session} Session */
 /** @typedef {import('../types.js').ExerciseLog} ExerciseLog */
 
+import { workingWeight } from './working-weight.js';
+
 // INTERPRETATION: see HANDOFF section 7 (R4, R5). "Last three sessions" means
 // the three most recent completed sessions that include the exercise.
 
@@ -38,4 +40,20 @@ export function historyCount(sessions, exerciseId) {
  */
 export function lastNLogs(sessions, exerciseId, n) {
   return logsForExercise(sessions, exerciseId).slice(-n).reverse();
+}
+
+/**
+ * The heaviest working weight ever logged for this exercise, across every
+ * completed session (not just the last three) — used to tell a genuine PR
+ * apart from simply exceeding today's suggested target (PROGRESS).
+ * @param {Session[]} sessions
+ * @param {string} exerciseId
+ * @returns {number | null}
+ */
+export function allTimeMaxWorkingWeight(sessions, exerciseId) {
+  const weights = logsForExercise(sessions, exerciseId)
+    .map((log) => workingWeight(log))
+    .filter((weight) => weight !== null);
+  if (weights.length === 0) return null;
+  return Math.max(...weights);
 }
