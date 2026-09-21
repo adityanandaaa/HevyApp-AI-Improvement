@@ -3,9 +3,11 @@
 /** @typedef {import('../domain/types.js').Session} Session */
 /** @typedef {import('../domain/types.js').SignalLabel} SignalLabel */
 /** @typedef {import('../domain/types.js').PainState} PainState */
+/** @typedef {import('../domain/copy.js').Locale} Locale */
 
 import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
 import { PUSH_DAY_SESSIONS } from '../data/sessions.js';
+import { DEFAULT_LOCALE } from '../domain/copy.js';
 
 // Mutable, in-memory, session-scoped runtime state (HANDOFF file tree calls
 // this "state/store"). Nothing here is persisted: a reload starts a fresh
@@ -52,6 +54,7 @@ import { PUSH_DAY_SESSIONS } from '../data/sessions.js';
  * @property {ChipsState | null} chips
  * @property {RestTimerState | null} restTimer
  * @property {RejectedRecommendation[]} rejectedRecommendations
+ * @property {Locale} locale dev-toolbar toggle (AC-68), en-GB or id-ID
  */
 
 /** @type {State} */
@@ -63,7 +66,13 @@ export const state = {
   chips: null,
   restTimer: null,
   rejectedRecommendations: [],
+  locale: DEFAULT_LOCALE,
 };
+
+/** @param {Locale} locale */
+export function setLocale(locale) {
+  state.locale = locale;
+}
 
 /**
  * The live EvaluateInput, reflecting everything logged/reported so far this

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { mountApp } from '../helpers/mount-app.js';
 
@@ -124,5 +124,28 @@ describe('Pain (M5)', () => {
     // Dismissed synchronously, before the next check's own signal (if any)
     // is computed asynchronously.
     expect(el('#docked-card').hidden).toBe(true);
+  });
+
+  it('AC-41: choosing the Pain/discomfort chip has the same effect as the Pain button', () => {
+    vi.useFakeTimers();
+    // Trigger chips (not a signal) on Incline set 2, checked as-is (40kg != target 42kg).
+    const row = /** @type {HTMLElement} */ (
+      document.querySelector('.exercise-block[data-exercise="incline-bench-press"] .set-row[data-set="2"]')
+    );
+    /** @type {HTMLButtonElement} */ (row.querySelector('.check-btn')).click();
+    vi.advanceTimersByTime(1000);
+    vi.useRealTimers();
+    const chip = /** @type {HTMLElement} */ ([...document.querySelectorAll('.chip')].find((c) => c.textContent === 'Pain/discomfort'));
+    expect(chip).toBeDefined();
+
+    chip.dispatchEvent(new Event('click', { bubbles: true }));
+
+    const button = painButton('incline-bench-press');
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(button.textContent?.trim()).toBe('Pain reported');
+    expect(el('#docked-card').querySelector('.docked-card__reason')?.textContent).toBe(
+      'Pain reported. Hold or reduce the load here. Stopping is a valid choice.',
+    );
+    expect(directionReason('chest-fly')).toContain('You reported pain on');
   });
 });

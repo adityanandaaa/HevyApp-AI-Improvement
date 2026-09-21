@@ -162,8 +162,22 @@ function wireDockedCardButtons() {
   for (const chipButton of dockedCardEl.querySelectorAll('.chip')) {
     chipButton.addEventListener('click', () => {
       const reason = chipButton.getAttribute('data-chip');
+      const exerciseId = state.chips?.exerciseId;
       if (!reason) return;
       selectChip(reason);
+
+      // AC-41: choosing Pain/discomfort has the same effect as the Pain button.
+      if (reason === 'Pain/discomfort' && exerciseId) {
+        const exercise = PUSH_DAY_EXERCISES.find((e) => e.id === exerciseId);
+        const painButton = /** @type {HTMLButtonElement | null} */ (
+          document.querySelector(`.exercise-block[data-exercise="${exerciseId}"] [data-pain-toggle]`)
+        );
+        if (exercise && painButton && painButton.getAttribute('aria-pressed') !== 'true') {
+          reportPainOnExercise(exercise, painButton);
+          return;
+        }
+      }
+
       renderDockedCard();
     });
   }
@@ -191,7 +205,10 @@ function computeSignal(exercise, checkedSet, setNumber) {
   if (!label) return null;
 
   const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
-  const reason = explain({ trigger: 'set_checked', exercise, evaluation, lastSet: checkedSet, target, setNumber }, label);
+  const reason = explain(
+    { trigger: 'set_checked', exercise, evaluation, lastSet: checkedSet, target, setNumber, locale: state.locale },
+    label,
+  );
   return { label, reason };
 }
 
@@ -295,28 +312,52 @@ function handlePainToggle(button) {
   const exercise = PUSH_DAY_EXERCISES.find((e) => e.id === exerciseBlock.dataset.exercise);
   if (!exercise) return;
 
-  const nowActive = button.getAttribute('aria-pressed') !== 'true';
-  button.setAttribute('aria-pressed', String(nowActive));
+  if (button.getAttribute('aria-pressed') !== 'true') {
+    reportPainOnExercise(exercise, button);
+  } else {
+    clearPainOnExercise(exercise, button);
+  }
+}
+
+/**
+ * R10/AC-28: reports pain and applies every side effect — used by both the
+ * Pain button itself and, per AC-41, the Pain/discomfort chip.
+ * @param {Exercise} exercise
+ * @param {HTMLButtonElement} button the exercise's own Pain toggle button
+ */
+function reportPainOnExercise(exercise, button) {
+  button.setAttribute('aria-pressed', 'true');
   const label = button.querySelector('.add-set-row__pain-label');
   const iconUse = button.querySelector('use');
-  if (label) label.textContent = nowActive ? 'Pain reported' : 'Pain';
-  if (iconUse) iconUse.setAttribute('href', nowActive ? '#icon-check' : '#icon-alert');
+  if (label) label.textContent = 'Pain reported';
+  if (iconUse) iconUse.setAttribute('href', '#icon-check');
 
-  if (nowActive) {
-    reportPain(exercise.id, setsLoggedToday(exercise.id).length);
-    setSignal({ exerciseId: exercise.id, setNumber: 0, label: 'HOLD', reason: COPY.painReported, isPain: true });
-    setChips(null);
-    renderDockedCard();
-    announceLive('Pain reported');
-  } else {
-    clearPain(exercise.id);
-    if (state.signal?.isPain && state.signal.exerciseId === exercise.id) {
-      hideDockedCard();
-    }
-    announceLive('Pain cleared');
-  }
+  reportPain(exercise.id, setsLoggedToday(exercise.id).length);
+  setSignal({ exerciseId: exercise.id, setNumber: 0, label: 'HOLD', reason: COPY.painReported, isPain: true });
+  setChips(null);
+  renderDockedCard();
+  announceLive('Pain reported');
 
   // R10: propagates to this and every later exercise's direction line.
+  renderDirectionLines();
+}
+
+/**
+ * @param {Exercise} exercise
+ * @param {HTMLButtonElement} button
+ */
+function clearPainOnExercise(exercise, button) {
+  button.setAttribute('aria-pressed', 'false');
+  const label = button.querySelector('.add-set-row__pain-label');
+  const iconUse = button.querySelector('use');
+  if (label) label.textContent = 'Pain';
+  if (iconUse) iconUse.setAttribute('href', '#icon-alert');
+
+  clearPain(exercise.id);
+  if (state.signal?.isPain && state.signal.exerciseId === exercise.id) {
+    hideDockedCard();
+  }
+  announceLive('Pain cleared');
   renderDirectionLines();
 }
 
@@ -335,7 +376,11 @@ function openWhySheet() {
     const evaluation = evaluate(evaluateInput, exercise.id);
     const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
     const setsToday = setsLoggedToday(exercise.id);
-    copy = composeWhySheet({ trigger: 'set_checked', exercise, evaluation, target }, state.signal.label, setsToday);
+    copy = composeWhySheet(
+      { trigger: 'set_checked', exercise, evaluation, target, locale: state.locale },
+      state.signal.label,
+      setsToday,
+    );
   }
 
   whySheetTitleEl.textContent = copy.title;

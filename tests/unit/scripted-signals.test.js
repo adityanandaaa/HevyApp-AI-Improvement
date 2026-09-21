@@ -50,6 +50,17 @@ describe('set_checked reason text (HANDOFF section 8, scenario 2)', () => {
   });
 });
 
+describe('AC-68: set_checked reason text respects the locale', () => {
+  it('formats a decimal RPE with a comma under id-ID', () => {
+    const lastSet = normalSet(40, 10, 9.5);
+    const reason = explain(
+      { trigger: 'set_checked', exercise: incline, evaluation, lastSet, target, setNumber: 1, locale: 'id-ID' },
+      'HOLD',
+    );
+    expect(reason).toBe('Set 1 was RPE 9,5. Stay at 40kg, no need to add a set today.');
+  });
+});
+
 describe('composeWhySheet (AC-18)', () => {
   it('matches the shape of the worked example (mockup 5) for a HOLD', () => {
     const setsToday = [normalSet(40, 12, 7.5), normalSet(40, 10, 9)];

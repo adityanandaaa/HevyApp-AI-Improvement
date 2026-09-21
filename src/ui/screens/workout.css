@@ -19,7 +19,7 @@
 .tip-banner p {
   flex: 1;
   margin: 0;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
 .tip-banner button {
@@ -47,20 +47,20 @@
 
 .routine-card__header h3 {
   margin: 0;
-  font-size: var(--fs-exercise);
+  font-size: calc(var(--fs-exercise) * var(--text-scale));
   font-weight: 700;
 }
 
 .routine-card__exercises {
   margin: 0 0 16px;
   color: var(--text-muted);
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.routine-card--inert {
-  opacity: 0.7;
-}
+/* No opacity dimming here (AC-56): it would also fade --text-muted below
+   the contrast minimum. The disabled Start Routine button (itself exempt
+   from contrast rules) already signals that the card is inert. */

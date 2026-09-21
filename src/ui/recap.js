@@ -3,7 +3,7 @@ import { evaluate } from '../domain/rules/evaluate.js';
 import { computeRecap } from '../domain/rules/recap.js';
 import { computeTarget } from '../domain/rules/target.js';
 import { composeRecap } from '../reasoning/scripted.js';
-import { finishSession } from '../state/store.js';
+import { finishSession, state } from '../state/store.js';
 import { renderApp } from './render.js';
 import { showScreen } from './navigation.js';
 
@@ -58,7 +58,7 @@ function handleFinish() {
   const nextLeadEvaluation = evaluate(nextInput, LEAD_EXERCISE_ID);
   const nextLeadTarget = leadExercise ? computeTarget(leadExercise, sessionsAfterToday, nextLeadEvaluation) : null;
 
-  const copy = composeRecap(recapData, nextLeadEvaluation, nextLeadTarget);
+  const copy = composeRecap(recapData, nextLeadEvaluation, nextLeadTarget, state.locale);
   renderRecap(copy);
 
   // AC-46: Today's Focus (and the direction lines, harmlessly) already

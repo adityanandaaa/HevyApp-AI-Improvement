@@ -13,6 +13,22 @@ export function displayLabel(label) {
   return label === 'BACK_OFF' ? 'BACK OFF' : label;
 }
 
+/** @typedef {'en-GB' | 'id-ID'} Locale */
+
+/** The dev toolbar's default (section 10: "the toolbar toggles en-GB and id-ID"). */
+export const DEFAULT_LOCALE = /** @type {Locale} */ ('en-GB');
+
+/**
+ * AC-68/T13: numbers follow the device locale — 62.5 shows as "62,5" under
+ * id-ID.
+ * @param {number} value
+ * @param {Locale} [locale]
+ * @returns {string}
+ */
+export function formatNumber(value, locale = DEFAULT_LOCALE) {
+  return new Intl.NumberFormat(locale).format(value);
+}
+
 export const LIMITS = {
   homeHook: 45,
   homeTeaser: 90,

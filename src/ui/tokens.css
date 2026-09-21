@@ -6,6 +6,13 @@
   --text: #ffffff;
   --text-muted: #84888e;
   --blue: #3d8af7;
+  /* AC-56: white text on --blue is 3.4:1, which only passes WCAG AA as large
+     text (>=18.66px bold or 24px regular per the true WCAG point size, not
+     the "1pt = 1px" convention this file otherwise uses) — 16px bold labels
+     don't qualify. --blue-fill is a measured-darker shade used only as a
+     background behind white button labels, so it reaches 4.5:1 without
+     changing --blue anywhere else (links, headings, icons already pass). */
+  --blue-fill: #3374cf;
   --done-row: #1c2f0e;
   --done-cell: #18290c;
   --done-check: #71ba41;

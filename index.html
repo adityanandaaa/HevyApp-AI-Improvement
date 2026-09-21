@@ -329,7 +329,7 @@
                     <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
                     <th>Reps</th>
                     <th>RPE</th>
-                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                    <th><span class="visually-hidden">Done</span><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check" /></svg></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -394,7 +394,7 @@
                     <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
                     <th>Reps</th>
                     <th>RPE</th>
-                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                    <th><span class="visually-hidden">Done</span><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check" /></svg></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -459,7 +459,7 @@
                     <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
                     <th>Reps</th>
                     <th>RPE</th>
-                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                    <th><span class="visually-hidden">Done</span><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check" /></svg></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -524,7 +524,7 @@
                     <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
                     <th>Reps</th>
                     <th>RPE</th>
-                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                    <th><span class="visually-hidden">Done</span><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check" /></svg></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -589,7 +589,7 @@
                     <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
                     <th>Reps</th>
                     <th>RPE</th>
-                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                    <th><span class="visually-hidden">Done</span><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check" /></svg></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -654,7 +654,7 @@
                     <th><svg class="icon icon--sm"><use href="#icon-dumbbell" /></svg> Kg</th>
                     <th>Reps</th>
                     <th>RPE</th>
-                    <th aria-label="Done"><svg class="icon icon--sm"><use href="#icon-check" /></svg></th>
+                    <th><span class="visually-hidden">Done</span><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check" /></svg></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -740,9 +740,38 @@
       <aside class="dev-toolbar" id="dev-toolbar" aria-label="Developer toolbar">
         <h2 class="dev-toolbar__title">Dev toolbar <span class="dev-toolbar__mock-tag">MOCK controls</span></h2>
         <p class="dev-toolbar__note">
-          Scenario picker, reset, text size, reduced motion, locale and tap-target outline
-          controls arrive in later milestones.
+          A scenario picker isn't built (see README Interpretations) — every
+          other prototype state is reachable by hand in Log Workout.
         </p>
+
+        <div class="dev-toolbar__group">
+          <p class="dev-toolbar__label">Text size (AC-58)</p>
+          <div class="dev-toolbar__buttons" role="group" aria-label="Text size">
+            <button type="button" data-text-scale="1" aria-pressed="true">100%</button>
+            <button type="button" data-text-scale="1.5" aria-pressed="false">150%</button>
+            <button type="button" data-text-scale="2" aria-pressed="false">200%</button>
+          </div>
+        </div>
+
+        <div class="dev-toolbar__group">
+          <p class="dev-toolbar__label">Locale (AC-68)</p>
+          <div class="dev-toolbar__buttons" role="group" aria-label="Locale">
+            <button type="button" data-locale="en-GB" aria-pressed="true">en-GB</button>
+            <button type="button" data-locale="id-ID" aria-pressed="false">id-ID</button>
+          </div>
+        </div>
+
+        <label class="dev-toolbar__toggle">
+          <input type="checkbox" id="toggle-reduced-motion" />
+          Reduced motion (AC-65)
+        </label>
+
+        <label class="dev-toolbar__toggle">
+          <input type="checkbox" id="toggle-tap-targets" />
+          Show tap targets (AC-59)
+        </label>
+
+        <button type="button" class="btn-secondary btn-block" id="dev-toolbar-reset">Reset session</button>
       </aside>
     </div>
     <script type="module" src="/src/main.js"></script>

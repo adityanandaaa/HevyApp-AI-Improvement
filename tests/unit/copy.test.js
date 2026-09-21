@@ -1,6 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import { CHIP_LABELS, COPY, LIMITS } from '../../src/domain/copy.js';
+import { CHIP_LABELS, COPY, LIMITS, formatNumber } from '../../src/domain/copy.js';
+
+describe('T13: locale-aware number formatting', () => {
+  it('formats 62.5 as "62,5" under id-ID', () => {
+    expect(formatNumber(62.5, 'id-ID')).toBe('62,5');
+  });
+
+  it('formats 62.5 as "62.5" under en-GB (the default)', () => {
+    expect(formatNumber(62.5)).toBe('62.5');
+    expect(formatNumber(62.5, 'en-GB')).toBe('62.5');
+  });
+
+  it('formats whole numbers the same in both locales', () => {
+    expect(formatNumber(40, 'en-GB')).toBe('40');
+    expect(formatNumber(40, 'id-ID')).toBe('40');
+  });
+});
 
 describe('T11: fixed copy stays within the character limits (HANDOFF section 9)', () => {
   it('the pain reported card fits the signal reason limit', () => {

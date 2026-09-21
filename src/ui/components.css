@@ -43,12 +43,12 @@ button:active {
 }
 
 .top-bar__title {
-  font-size: var(--fs-title);
+  font-size: calc(var(--fs-title) * var(--text-scale));
   font-weight: 700;
 }
 
 .top-bar--log .top-bar__title {
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   font-weight: 400;
   color: var(--text-muted);
   flex: 1;
@@ -86,9 +86,9 @@ button:active {
   min-height: var(--tap);
   padding: 0 20px;
   border-radius: var(--radius-btn-lg);
-  background: var(--blue);
+  background: var(--blue-fill);
   color: var(--text);
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -115,7 +115,7 @@ button:active {
   border-radius: var(--radius-btn);
   background: var(--surface);
   color: var(--text);
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   border: none;
   cursor: pointer;
 }
@@ -125,7 +125,7 @@ button:active {
 }
 
 .section-label {
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--text-scale));
   text-transform: uppercase;
   color: var(--text-muted);
   letter-spacing: 0.02em;
@@ -133,7 +133,7 @@ button:active {
 }
 
 .section-title {
-  font-size: var(--fs-exercise);
+  font-size: calc(var(--fs-exercise) * var(--text-scale));
   font-weight: 700;
   margin: 0;
 }
@@ -159,7 +159,7 @@ button:active {
   background: none;
   border: none;
   color: var(--blue);
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   cursor: pointer;
 }
 
@@ -189,7 +189,7 @@ button:active {
 }
 
 .mock-tag {
-  font-size: var(--fs-small);
+  font-size: calc(var(--fs-small) * var(--text-scale));
   text-transform: uppercase;
   color: var(--text-muted);
   font-weight: 400;
@@ -197,7 +197,7 @@ button:active {
 }
 
 .badge {
-  font-size: var(--fs-small);
+  font-size: calc(var(--fs-small) * var(--text-scale));
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
@@ -227,7 +227,7 @@ button:active {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: var(--fs-small);
+  font-size: calc(var(--fs-small) * var(--text-scale));
   cursor: pointer;
 }
 
@@ -259,7 +259,7 @@ button:active {
 
 .todays-focus__heading {
   margin: 0 0 4px;
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--text-scale));
   text-transform: uppercase;
   color: var(--blue);
   letter-spacing: 0.02em;
@@ -267,40 +267,49 @@ button:active {
 
 .todays-focus__session {
   margin: 0 0 10px;
-  font-size: var(--fs-exercise);
+  font-size: calc(var(--fs-exercise) * var(--text-scale));
   font-weight: 700;
 }
 
 .todays-focus__signal {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin: 0 0 10px;
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   font-weight: 600;
+}
+
+.todays-focus__signal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
 }
 
 .todays-focus__signal .signal-icon {
   width: 20px;
   height: 20px;
+  flex: 0 0 auto;
 }
 
 .todays-focus__teaser {
   margin: 0 0 16px;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   color: var(--text);
 }
 
 .todays-focus__section-label {
   margin: 12px 0 4px;
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--text-scale));
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .todays-focus__block {
   margin: 0 0 4px;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
 .todays-focus .btn-primary {
@@ -320,25 +329,25 @@ button:active {
 }
 
 .direction-line__label {
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--text-scale));
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .direction-line__target {
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   font-weight: 700;
 }
 
 .direction-line__reason {
   margin: 4px 0 0;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   color: var(--text);
 }
 
 .direction-line--building {
   margin: 10px 0;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   color: var(--text-muted);
 }
 
@@ -389,7 +398,7 @@ button:active {
 
 .sheet__title {
   margin: 0 0 16px;
-  font-size: var(--fs-title);
+  font-size: calc(var(--fs-title) * var(--text-scale));
   font-weight: 700;
 }
 
@@ -402,12 +411,12 @@ button:active {
 
 .why-sheet__label {
   margin: 0 0 4px;
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--text-scale));
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .why-sheet__block p:last-child {
   margin: 0;
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
 }

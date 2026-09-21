@@ -25,7 +25,10 @@ from a phone on the same network).
 ```
 npm run lint        # ESLint
 npm run typecheck    # tsc, checking JSDoc types in the .js source
-npm test             # Vitest
+npm test             # Vitest (unit + component)
+npm run test:e2e     # Playwright: axe accessibility scans, tap sizes, focus,
+                      # reduced motion, locale (needs `npx playwright install
+                      # chromium` once; the dev server starts automatically)
 ```
 
 ## Project structure
@@ -41,19 +44,20 @@ src/
     log-workout.js            signal card, chips, Why? sheet, rest timer (M4),
                                 the Pain toggle (M5)
     recap.js                    Finish -> recap screen -> Done (M6)
-    signal-icons.js                SignalLabel -> sprite symbol id
-    timing.js                        TIMING constants (section 9)
-    tokens.css                         design tokens (section 10 of HANDOFF.md)
-    layout.css                           phone frame and dev toolbar layout
-    components.css                         shared button/card/icon/tab-bar/
-                                             Today's-Focus/direction-line/
-                                             docked-card/chips/sheet styles
+    devtoolbar.js                 text size / locale / reduced motion / tap
+                                    targets / reset toggles (M7)
+    signal-icons.js                  SignalLabel -> sprite symbol id
+    timing.js                          TIMING constants (section 9)
+    tokens.css                           design tokens (section 10 of HANDOFF.md)
+    layout.css                             phone frame and dev toolbar layout
+    components.css                           shared button/card/icon/tab-bar/
+                                               Today's-Focus/direction-line/
+                                               docked-card/chips/sheet styles
     screens/
-      home.css                                Home tab
-      workout.css                               Workout tab
-      log-workout.css                             Log Workout screen + signal card
-      recap.css                                     Session recap
-    devtoolbar/            (not yet built — see Interpretations)
+      home.css                                  Home tab
+      workout.css                                 Workout tab
+      log-workout.css                               Log Workout screen + signal card
+      recap.css                                       Session recap
   domain/                pure JS, no DOM, unit tested
     types.js               JSDoc typedefs (section 6 of HANDOFF.md)
     copy.js                 fixed strings, limits, templates (section 9)
@@ -90,7 +94,9 @@ tests/
   helpers/                 shared test setup (mount-app.js)
   unit/                    domain and reasoning tests
   component/                DOM-level checks
-  e2e/                       Playwright + axe (added in M7)
+  e2e/                       Playwright: axe scans (accessibility.test.js),
+                              tap sizes/reduced-motion/locale/focus trap
+                              (behaviors.test.js)
 ```
 
 ## Interpretations
@@ -270,6 +276,48 @@ M6 additions:
   Day rows regardless of whether the reviewer's test run touched every
   exercise.
 
+M7 additions:
+
+- **No scenario picker was built.** Confirms the M4/M5 deferral: text size,
+  locale, reduced motion, tap-target outline and reset are all built (the
+  part of the dev toolbar M7 actually needs), but the scenario picker
+  itself remains a QA convenience the reviewer doesn't strictly need —
+  every state HANDOFF's five scenarios describe is reachable by hand in
+  Log Workout, as M4's note explains. PR/ADAPT/PROGRESS accordingly stay
+  unreachable (R12: they're "scripted in scenarios").
+- **`--blue-fill`, a measured-darker shade of `--blue`, backs every
+  primary-button/pill fill (white label text).** Automated axe testing
+  found that white text on `--blue` at 16px is 3.4:1 — HANDOFF's own
+  contrast table (section 10) calls this acceptable as "bold 16pt", but
+  WCAG's actual large-text exemption needs ~18.66px bold or 24px regular
+  (using true typographic points, not this file's own "1pt = 1px"
+  convention) — 16px doesn't qualify at any weight. `--blue-fill` reaches
+  4.5:1 with white text without touching `--blue` itself, which already
+  passes everywhere else it's used (links, headings, icons on dark
+  backgrounds). This is the one place the prototype knowingly diverges
+  from a color HANDOFF sampled from Hevy's own screenshots, for a real
+  accessibility requirement axe caught.
+- **Two more axe-caught contrast fixes**, both from decorative choices
+  this prototype made, not from HANDOFF's own tokens: the "inert"
+  Leg Day/Pull Day cards no longer dim the whole card to 70% opacity
+  (M1) — dimming `--text-muted` below 4.5:1 — and rely on the disabled
+  Start Routine button alone (itself contrast-exempt) to read as inert.
+  The Previous column switches to full-strength text once a row is
+  checked, since `--text-muted` on `--done-row` measures 4.03:1 (a token
+  pairing HANDOFF's own contrast table doesn't cover).
+- **Locale threading covers every number the scripted layer writes**
+  (direction lines, Today's Focus, signal/chips/Why? sheet text, and the
+  recap), not just the direction line. `ReasoningInput` gained an
+  optional `locale` field alongside `target`/`setNumber` (same pattern,
+  same reasoning: needed for concrete numbers in scripted text).
+- **VoiceOver and TalkBack were not tested.** M7's own done-criteria asks
+  for this, but real screen-reader behaviour needs a human on physical
+  iOS/Android hardware — outside what this build session can verify.
+  Likewise AC-48 (glance a card for 3 seconds, state the label and action
+  correctly in 5 of 5 scenarios) needs an actual human glancing at the
+  screen. Both are called out, not silently marked done, in Appendix A
+  below.
+
 ## Milestones
 
 Tracking `HANDOFF.md` section 11. Each milestone is reviewed before starting the
@@ -282,5 +330,67 @@ next.
 - [x] M4 — Signals
 - [x] M5 — Pain
 - [x] M6 — Recap
-- [ ] M7 — Accessibility and QA
+- [x] M7 — Accessibility and QA (automated checks; VoiceOver/TalkBack need Aditya — see Appendix A)
 - [ ] M8 — Live model (optional)
+
+## Appendix A tracking
+
+Every row from HANDOFF Appendix A, ticked or noted (working agreement 12.9).
+Legend: ✅ automated (a test asserts it) · 👁 verified by screenshot or code
+review this session, not by an automated assertion · ⚠️ genuinely open —
+needs Aditya, either on a real device or by eye.
+
+| ID | Status | Note |
+|---|---|---|
+| AC-1 to AC-3 | ✅ | `todays-focus-render.test.js` — one component, both placements, in order |
+| AC-4, AC-5 | ✅ | `todays-focus.test.js` — block order and character limits |
+| AC-6 | ✅ | `todays-focus.test.js` (T14) — always leads with Incline |
+| AC-7 | ✅ | `navigation.test.js` / `todays-focus-render.test.js` — Start Routine opens Log Workout |
+| AC-8, AC-9 | ✅ | `todays-focus-render.test.js` + `scripted-signals.test.js` (length) |
+| AC-10 | 👁 | By construction — `render.js` only reads `evaluate()`/`computeTarget()`, never writes to a KG/REPS/RPE input |
+| AC-11 | ✅ | `todays-focus-render.test.js` — Dips shows the history-building line |
+| AC-12 | ⚠️ | Only 2 of the 7 triggers are implemented (HOLD on RPE>=9, BACK_OFF on a rep drop — R12's stated default policy). PR/ADAPT/PROGRESS need a scenario system that isn't built (see Interpretations) |
+| AC-13 | ✅ | `docked-card` CSS (flex-column, 40% max-height, docks above the rest bar) + axe scan |
+| AC-14 | ✅ | `signals.test.js` — appears after the signal delay, well under 1s; fades over `--t-card` (200ms) |
+| AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order |
+| AC-16 | ✅ | `signals.test.js` — dismiss, next-check, and rest-timer-zero all tested |
+| AC-17 | ✅ | Single `state.signal`, replaced not stacked; Dismiss never touches `rejectedRecommendations` |
+| AC-18 | ✅ | `behaviors.test.js` (focus trap, Close) + `signals.test.js` (four blocks, in order) |
+| AC-19 | ✅ | The checkbox toggle is synchronous; signal computation is wrapped in try/catch (nothing shown or thrown on failure) |
+| AC-20 | 👁 | Reactive signals are recomputed from live `todaysLogs()` on every check, so nothing is "permanent" — not covered by a dedicated regression test |
+| AC-21 to AC-24, AC-26 | ✅ | Golden tests T1-T10 (`evaluate.test.js`) |
+| AC-25 | ✅ | `evaluate()` throws for an exercise outside the routine; ADAPT has no editing action anywhere in the UI |
+| AC-27, AC-28 | ✅ | `pain.test.js` |
+| AC-29 to AC-32 | ✅ | `pain.test.js` |
+| AC-33 | ✅ | `store.test.js` (session-scoped state) — pain is never added to `rejectedRecommendations` |
+| AC-34 | ✅ | `pain.test.js` greps the Why? sheet for diagnostic/treatment language |
+| AC-35 | 👁 | By construction — KG/REPS/RPE are plain `<input>`s, never disabled |
+| AC-36 | ✅ | `chips.test.js` + `signals.test.js` |
+| AC-37 | ✅/👁 | Chip order and count are tested (`copy.test.js`); the two-row wrap at 393pt is a CSS flex-wrap, checked by screenshot, not pixel-measured |
+| AC-38, AC-39, AC-40 | ✅ | `chips.test.js`, `signals.test.js`, `pain.test.js` |
+| AC-41 | ✅ | `pain.test.js` — choosing the Pain/discomfort chip also reports pain (same button/card/propagation effects as tapping Pain directly) |
+| AC-42 | ✅ | `selectChip()` records to `rejectedRecommendations`; there is no "failed" state anywhere in the app |
+| AC-43 to AC-46 | ✅ | `recap.test.js`, including the AC-46 push-to-42kg -> next-session-says-HOLD case |
+| AC-47 | 👁 | Global `button:active { opacity: 0.7 }` using `--t-press` (100ms) — not asserted by a timing test |
+| AC-48 | ⚠️ | Needs a human — glancing at a card for 3 seconds and recalling it is a perception test, not something this session can run |
+| AC-49 | 👁 | Reviewed by eye: only RPE and PR appear as jargon, matching Hevy's own vocabulary |
+| AC-50 | 👁 | Every transition uses `--t-card` (200ms); nothing in the CSS flashes or blinks |
+| AC-51 | ✅/👁 | `tokens.css` is the only colour source; `--blue-fill` is the one addition (a shade of `--blue`, used only where accessibility required it — see Interpretations). Signals are never colour-only (icon + label, checked by axe's `color-contrast`/`link-in-text-block`-style rules and `signals.test.js`) |
+| AC-52, AC-53 | 👁 | `--fs-*`/`--radius-*` tokens used throughout; icons are 2px stroke, rounded caps (verified by screenshot each milestone) |
+| AC-54 | 👁 | Verified against the mockups at each milestone's screenshot review |
+| AC-55 | ✅ | axe `color-contrast` scan — fixed 3 real violations while building M7 (see Interpretations) |
+| AC-56 | ✅ | `accessibility.test.js` — 0 axe violations across 8 screen states (Home, Workout, Log Workout x2, Why? sheet, Pain, Recap, dev toolbar) |
+| AC-57 | ✅ | Every `SignalLabel` maps to a distinct icon (`signal-icons.js`); `displayLabel()` always renders text alongside it |
+| AC-58 | ✅/👁 | `behaviors.test.js` doesn't assert this directly, but a manual 200% screenshot check confirmed no horizontal overflow (`scrollWidth === clientWidth === 393`) and no clipped text; fixed one real wrapping-order issue found this way (Today's Focus signal badge) |
+| AC-59 | ✅ | `behaviors.test.js` — Start Routine, Pain, chips, Dismiss, Why? Close and recap Done all measure >=44pt. `.check-btn` is correctly excluded: it's Hevy's own existing control (~35-40pt, HANDOFF section 10), not a new element |
+| AC-60 | ✅ | Every action is a single tap; the Why? sheet has a Close button (its overlay is also click-to-close, though swipe-to-dismiss itself isn't implemented) |
+| AC-61 | 👁 | The docked card, chips, Dismiss, Why? and recap Done all sit in the lower/middle portion of the 852pt screen — not pixel-measured against an exact "lower half" line |
+| AC-62 | ⚠️ | The live region is wired (`#live-region`, `aria-live="polite"`) and its text updates are unit-tested (`signals.test.js`, `pain.test.js`), but real VoiceOver/TalkBack announcement behaviour needs a physical device |
+| AC-63 | ✅ | `pain.test.js` — every control's accessible name contains its visible text; Pain exposes `aria-pressed` |
+| AC-64 | ✅ | `behaviors.test.js` — Tab wraps inside the sheet, Escape closes it, focus returns to the trigger |
+| AC-65 | ✅ | `behaviors.test.js` (toolbar toggle) + `@media (prefers-reduced-motion: reduce)` for the OS-level case |
+| AC-66 | 👁 | Every state has visible text; the prototype has no sound or vibration at all |
+| AC-67 | 👁 | The rest timer is Hevy's own convention, left untouched; nothing here imposes a race against it |
+| AC-68 | ✅ | `copy.test.js` (T13), `scripted-signals.test.js`, `behaviors.test.js` (live id-ID switch across direction lines, signals, Why? sheet and recap) |
+| AC-69 | ✅ | `phone-frame.test.js`, `tokens.test.js` |
+| AC-70 | 👁 | By construction — mock data only, Push Day only, RPE pre-filled for every set |

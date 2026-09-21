@@ -5,10 +5,10 @@ import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
 import { evaluate } from '../domain/rules/evaluate.js';
 import { computeTarget } from '../domain/rules/target.js';
 import { computeTodaysFocus } from '../domain/rules/todays-focus.js';
-import { COPY, displayLabel } from '../domain/copy.js';
+import { COPY, displayLabel, formatNumber } from '../domain/copy.js';
 import { choose, composeTodaysFocusCopy, explain } from '../reasoning/scripted.js';
 import { SIGNAL_ICON_IDS } from './signal-icons.js';
-import { buildEvaluateInput } from '../state/store.js';
+import { buildEvaluateInput, state } from '../state/store.js';
 
 // The UI never decides a signal (HANDOFF section 5, rule 2): it calls
 // evaluate() for the allowed signals and the reasoning provider for the
@@ -28,14 +28,16 @@ function signalIconMarkup(label) {
  */
 function todaysFocusMarkup(variant) {
   const data = computeTodaysFocus(buildEvaluateInput());
-  const copy = composeTodaysFocusCopy(data);
+  const copy = composeTodaysFocusCopy(data, state.locale);
 
   const body =
     variant === 'home'
       ? `
         <p class="todays-focus__signal">
-          ${signalIconMarkup(copy.signalLabel)}
-          <strong>${displayLabel(copy.signalLabel)}</strong>
+          <span class="todays-focus__signal-badge">
+            ${signalIconMarkup(copy.signalLabel)}
+            <strong>${displayLabel(copy.signalLabel)}</strong>
+          </span>
           <span>${copy.homeHeadline}</span>
         </p>
         <p class="todays-focus__teaser">${copy.homeTeaser}</p>
@@ -78,9 +80,12 @@ function directionLineMarkup(exercise) {
   }
 
   const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
-  const label = choose({ trigger: 'direction', exercise, evaluation, target }) ?? 'HOLD';
-  const reason = explain({ trigger: 'direction', exercise, evaluation, target }, label);
-  const targetText = target ? `${target.weightKg}kg × ${target.repsMin}-${target.repsMax}` : '';
+  const locale = state.locale;
+  const label = choose({ trigger: 'direction', exercise, evaluation, target, locale }) ?? 'HOLD';
+  const reason = explain({ trigger: 'direction', exercise, evaluation, target, locale }, label);
+  const targetText = target
+    ? `${formatNumber(target.weightKg, locale)}kg × ${target.repsMin}-${target.repsMax}`
+    : '';
 
   return `
     <div class="direction-line">

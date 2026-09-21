@@ -1,15 +1,18 @@
 // Screen navigation and small cosmetic toggles, plus rendering Today's Focus
 // and the direction lines (M3), the signal card / rest timer / Why? sheet
-// interactions (M4), Pain (M5) and the session recap (M6).
+// interactions (M4), Pain (M5), the session recap (M6) and the dev toolbar
+// (M7).
 
 import { renderApp } from './ui/render.js';
 import { initLogWorkoutInteractions } from './ui/log-workout.js';
 import { initRecapInteractions } from './ui/recap.js';
+import { initDevToolbar } from './ui/devtoolbar.js';
 import { showScreen } from './ui/navigation.js';
 
 renderApp();
 initLogWorkoutInteractions();
 initRecapInteractions();
+initDevToolbar();
 
 for (const button of document.querySelectorAll('[data-nav]')) {
   if (button instanceof HTMLButtonElement && !button.disabled) {

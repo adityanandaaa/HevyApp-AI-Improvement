@@ -81,6 +81,9 @@
  *   scripted `set_checked` wording states which set triggered it (section 8
  *   scenario 2: "Set 3 was RPE 9..."), which needs the set's 1-based position
  *   in today's log for this exercise.
+ * @property {import('./copy.js').Locale} [locale] INTERPRETATION: also not in
+ *   section 6. AC-68 requires locale-aware numbers in the scripted text
+ *   itself, so the wording layer needs to know which locale to format in.
  */
 
 export {};

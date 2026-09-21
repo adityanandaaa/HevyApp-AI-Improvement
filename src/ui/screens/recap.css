@@ -39,18 +39,18 @@
 .recap-row__name {
   margin: 0;
   color: var(--blue);
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   font-weight: 600;
 }
 
 .recap-row__sets {
   margin: 2px 0 0;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
 .recap-row__status {
   margin: 2px 0 0;
-  font-size: var(--fs-small);
+  font-size: calc(var(--fs-small) * var(--text-scale));
   color: var(--text-muted);
 }
 
@@ -63,7 +63,7 @@
 
 .recap-summary__label {
   margin: 6px 0 2px;
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--text-scale));
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -74,7 +74,7 @@
 
 .recap-summary__text {
   margin: 0;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
 .recap-done {

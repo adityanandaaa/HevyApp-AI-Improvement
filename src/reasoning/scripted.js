@@ -4,7 +4,7 @@
 /** @typedef {import('../domain/rules/todays-focus.js').TodaysFocusData} TodaysFocusData */
 
 import { enforceGuardrails } from './provider.js';
-import { COPY, LIMITS, displayLabel } from '../domain/copy.js';
+import { COPY, DEFAULT_LOCALE, LIMITS, displayLabel, formatNumber } from '../domain/copy.js';
 
 // The prototype implementation of ReasoningProvider (HANDOFF section 5, rule
 // 6): wording is scripted here, not model-generated, but through the same
@@ -35,12 +35,13 @@ export function choose(input) {
  * fragility for a 6-exercise prototype.
  * @param {string} exerciseName
  * @param {Target} target
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function pushReason(exerciseName, target) {
+function pushReason(exerciseName, target, locale) {
   return (
-    `Your ${exerciseName} has been stable at ${target.currentWeightKg}kg x ${target.repsMax} for three ` +
-    `sessions at RPE 8 or lower. If the first set feels controlled, consider ${target.weightKg}kg.`
+    `Your ${exerciseName} has been stable at ${formatNumber(target.currentWeightKg, locale)}kg x ${target.repsMax} for three ` +
+    `sessions at RPE 8 or lower. If the first set feels controlled, consider ${formatNumber(target.weightKg, locale)}kg.`
   );
 }
 
@@ -48,17 +49,18 @@ function pushReason(exerciseName, target) {
  * @param {string} exerciseName
  * @param {Target} target
  * @param {boolean} isHighRpe
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function holdReason(exerciseName, target, isHighRpe) {
+function holdReason(exerciseName, target, isHighRpe, locale) {
   if (isHighRpe) {
     return (
-      `Your ${exerciseName} has felt like a high-effort lift at ${target.currentWeightKg}kg recently. ` +
+      `Your ${exerciseName} has felt like a high-effort lift at ${formatNumber(target.currentWeightKg, locale)}kg recently. ` +
       `Stay here and let it feel easier before pushing.`
     );
   }
   return (
-    `Your ${exerciseName} is holding at ${target.currentWeightKg}kg. Keep chasing clean reps in the ` +
+    `Your ${exerciseName} is holding at ${formatNumber(target.currentWeightKg, locale)}kg. Keep chasing clean reps in the ` +
     `target range before adding weight.`
   );
 }
@@ -68,10 +70,11 @@ function holdReason(exerciseName, target, isHighRpe) {
  * at 40kg, no need to add a set today."
  * @param {number} setNumber
  * @param {import('../domain/types.js').SetEntry} lastSet
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function highRpeSetCheckedReason(setNumber, lastSet) {
-  return `Set ${setNumber} was RPE ${lastSet.rpe}. Stay at ${lastSet.weightKg}kg, no need to add a set today.`;
+function highRpeSetCheckedReason(setNumber, lastSet, locale) {
+  return `Set ${setNumber} was RPE ${formatNumber(lastSet.rpe, locale)}. Stay at ${formatNumber(lastSet.weightKg, locale)}kg, no need to add a set today.`;
 }
 
 /**
@@ -79,10 +82,11 @@ function highRpeSetCheckedReason(setNumber, lastSet) {
  * example for the rep-drop trigger, only for the RPE trigger above.
  * @param {number} setNumber
  * @param {import('../domain/types.js').SetEntry} lastSet
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function repDropSetCheckedReason(setNumber, lastSet) {
-  return `Set ${setNumber} dropped to ${lastSet.reps} reps at ${lastSet.weightKg}kg. Consider backing off or stopping here.`;
+function repDropSetCheckedReason(setNumber, lastSet, locale) {
+  return `Set ${setNumber} dropped to ${lastSet.reps} reps at ${formatNumber(lastSet.weightKg, locale)}kg. Consider backing off or stopping here.`;
 }
 
 /**
@@ -91,7 +95,7 @@ function repDropSetCheckedReason(setNumber, lastSet) {
  * @returns {string}
  */
 export function explain(input, label) {
-  const { evaluation, exercise, target, lastSet, setNumber } = input;
+  const { evaluation, exercise, target, lastSet, setNumber, locale = DEFAULT_LOCALE } = input;
 
   if (evaluation.historyBuilding) {
     return COPY.historyBuilding(evaluation.historyCount);
@@ -102,15 +106,17 @@ export function explain(input, label) {
   }
 
   if (input.trigger === 'set_checked' && lastSet && setNumber) {
-    return label === 'HOLD' ? highRpeSetCheckedReason(setNumber, lastSet) : repDropSetCheckedReason(setNumber, lastSet);
+    return label === 'HOLD'
+      ? highRpeSetCheckedReason(setNumber, lastSet, locale)
+      : repDropSetCheckedReason(setNumber, lastSet, locale);
   }
 
   const isHighRpe = evaluation.blocked.some((b) => b.label === 'PUSH' && b.why === 'high_rpe');
   let reason = !target
     ? `Keep your ${exercise.name} steady today.`
     : label === 'PUSH'
-      ? pushReason(exercise.name, target)
-      : holdReason(exercise.name, target, isHighRpe);
+      ? pushReason(exercise.name, target, locale)
+      : holdReason(exercise.name, target, isHighRpe, locale);
 
   if (evaluation.painEffect === 'soft' && evaluation.sharedMuscle) {
     const withNote = `${reason} ${COPY.painSecondaryOverlap(evaluation.sharedMuscle)}`;
@@ -165,15 +171,16 @@ function composeWorkoutExpect(data) {
  * R14: the lead exercise is always Incline, so "incline" can be named
  * directly here rather than derived.
  * @param {TodaysFocusData} data
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function composeWorkoutTackle(data) {
+function composeWorkoutTackle(data, locale) {
   if (!data.leadTarget) {
     return `Start incline at a comfortable weight and reassess after the first set.`;
   }
   return (
-    `Start incline at ${data.leadTarget.currentWeightKg}kg. If the first working set feels controlled at ` +
-    `RPE 8 or lower, go to ${data.leadTarget.weightKg}kg. At RPE 9 or higher, stay put and keep the rest steady.`
+    `Start incline at ${formatNumber(data.leadTarget.currentWeightKg, locale)}kg. If the first working set feels controlled at ` +
+    `RPE 8 or lower, go to ${formatNumber(data.leadTarget.weightKg, locale)}kg. At RPE 9 or higher, stay put and keep the rest steady.`
   );
 }
 
@@ -189,9 +196,10 @@ function composeWorkoutTackle(data) {
 /**
  * R14: composes both Today's Focus wordings from one data object.
  * @param {TodaysFocusData} data
+ * @param {import('../domain/copy.js').Locale} [locale]
  * @returns {TodaysFocusCopy}
  */
-export function composeTodaysFocusCopy(data) {
+export function composeTodaysFocusCopy(data, locale = DEFAULT_LOCALE) {
   const signalLabel =
     choose({
       trigger: 'today',
@@ -206,7 +214,7 @@ export function composeTodaysFocusCopy(data) {
 
   const homeTeaser =
     pushing && data.leadTarget
-      ? `Three steady sessions at RPE 8 or lower. Try ${data.leadTarget.weightKg}kg today?`
+      ? `Three steady sessions at RPE 8 or lower. Try ${formatNumber(data.leadTarget.weightKg, locale)}kg today?`
       : 'Keep the weight steady and focus on clean reps today.';
 
   return {
@@ -214,17 +222,18 @@ export function composeTodaysFocusCopy(data) {
     homeHeadline,
     homeTeaser,
     workoutExpect: composeWorkoutExpect(data),
-    workoutTackle: composeWorkoutTackle(data),
+    workoutTackle: composeWorkoutTackle(data, locale),
   };
 }
 
 /**
  * @param {import('../domain/types.js').SetEntry[]} sets
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function describeSetsToday(sets) {
-  const parts = sets.map((s) => `${s.weightKg}kg × ${s.reps}`);
-  const rpes = sets.map((s) => String(s.rpe));
+function describeSetsToday(sets, locale) {
+  const parts = sets.map((s) => `${formatNumber(s.weightKg, locale)}kg × ${s.reps}`);
+  const rpes = sets.map((s) => formatNumber(s.rpe, locale));
   const setLabel = sets.length === 1 ? 'Set 1' : `Sets 1 to ${sets.length}`;
   const rpeLabel = rpes.length === 1 ? `RPE ${rpes[0]}` : `RPE ${joinNames(rpes)}`;
   return `${setLabel}: ${parts.join(', ')} at ${rpeLabel}.`;
@@ -252,22 +261,23 @@ function describeSetsToday(sets) {
  * @returns {WhySheetCopy}
  */
 export function composeWhySheet(input, label, setsToday) {
+  const locale = input.locale ?? DEFAULT_LOCALE;
   const title = `Why ${displayLabel(label)}?`;
-  const whatIDid = describeSetsToday(setsToday);
+  const whatIDid = describeSetsToday(setsToday, locale);
   const lastSet = setsToday[setsToday.length - 1];
 
   if (label === 'HOLD' && lastSet) {
     const first = setsToday[0]?.rpe;
     const calculated =
       setsToday.length > 1
-        ? `RPE rose from ${first} to ${lastSet.rpe} across the ${setsToday.length} sets.`
-        : `The set was RPE ${lastSet.rpe}.`;
+        ? `RPE rose from ${formatNumber(first ?? lastSet.rpe, locale)} to ${formatNumber(lastSet.rpe, locale)} across the ${setsToday.length} sets.`
+        : `The set was RPE ${formatNumber(lastSet.rpe, locale)}.`;
     return {
       title,
       whatIDid,
       calculated,
       aiInterpretation: 'Effort is climbing within the session, so more load or sets are not advised.',
-      recommendation: `Hold at ${lastSet.weightKg}kg. No need to add a set today.`,
+      recommendation: `Hold at ${formatNumber(lastSet.weightKg, locale)}kg. No need to add a set today.`,
     };
   }
 
@@ -279,7 +289,7 @@ export function composeWhySheet(input, label, setsToday) {
     whatIDid,
     calculated:
       previous && lastSet
-        ? `Reps dropped from ${previous.reps} to ${lastSet.reps} at ${lastSet.weightKg}kg.`
+        ? `Reps dropped from ${previous.reps} to ${lastSet.reps} at ${formatNumber(lastSet.weightKg, locale)}kg.`
         : 'Reps dropped from the previous set at this weight.',
     aiInterpretation: 'A rep drop like this suggests fatigue is building.',
     recommendation: `Back off the weight or stop here for ${input.exercise.name}.`,
@@ -305,10 +315,11 @@ export function composePainWhySheet(exercise) {
 
 /**
  * @param {number} weightKg
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function weightLabel(weightKg) {
-  return weightKg === 0 ? 'Bodyweight' : `${weightKg}kg`;
+function weightLabel(weightKg, locale) {
+  return weightKg === 0 ? 'Bodyweight' : `${formatNumber(weightKg, locale)}kg`;
 }
 
 /**
@@ -317,9 +328,10 @@ function weightLabel(weightKg) {
  * "Wkg x R x N" (or "Wkg x R1, R2, R3" if reps differ), otherwise each set
  * is listed individually. Weight 0 shows as "Bodyweight" (HANDOFF section 8).
  * @param {import('../domain/types.js').SetEntry[]} setsToday
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function formatSetsSummary(setsToday) {
+function formatSetsSummary(setsToday, locale) {
   if (setsToday.length === 0) return 'Not logged';
 
   const weights = setsToday.map((s) => s.weightKg);
@@ -331,12 +343,12 @@ function formatSetsSummary(setsToday) {
     const first = weights[0];
     if (first === undefined) return 'Not logged';
     if (sameReps) {
-      return `${weightLabel(first)} × ${reps[0]} × ${setsToday.length}`;
+      return `${weightLabel(first, locale)} × ${reps[0]} × ${setsToday.length}`;
     }
-    return `${weightLabel(first)} × ${reps.join(', ')}`;
+    return `${weightLabel(first, locale)} × ${reps.join(', ')}`;
   }
 
-  return setsToday.map((s) => `${weightLabel(s.weightKg)} × ${s.reps}`).join(', ');
+  return setsToday.map((s) => `${weightLabel(s.weightKg, locale)} × ${s.reps}`).join(', ');
 }
 
 /**
@@ -344,9 +356,10 @@ function formatSetsSummary(setsToday) {
  * single fully-scripted scenario; this generalises the same shape (what
  * happened, what to do with it) to whatever was actually logged.
  * @param {import('../domain/rules/recap.js').RecapRow} row
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function composeRowStatus(row) {
+function composeRowStatus(row, locale) {
   const { evaluation, target, setsToday, historyCountBeforeToday } = row;
 
   if (evaluation.historyBuilding) {
@@ -359,10 +372,10 @@ function composeRowStatus(row) {
 
   const maxRpe = Math.max(...setsToday.map((s) => s.rpe));
   const workingWeightToday = Math.max(...setsToday.map((s) => s.weightKg));
-  const label = weightLabel(workingWeightToday).toLowerCase();
+  const label = weightLabel(workingWeightToday, locale).toLowerCase();
 
   if (maxRpe >= 9) {
-    return `Held at ${label}. RPE rose to ${maxRpe} on the last set.`;
+    return `Held at ${label}. RPE rose to ${formatNumber(maxRpe, locale)} on the last set.`;
   }
   if (evaluation.allowed.includes('PUSH') && target) {
     return workingWeightToday >= target.weightKg
@@ -405,16 +418,17 @@ function composeOverall(headline) {
  * session's evaluation (with today's session already counted) agrees.
  * @param {import('../domain/types.js').Evaluation} nextLeadEvaluation
  * @param {import('../domain/rules/target.js').Target | null} nextLeadTarget
+ * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function composeNextSession(nextLeadEvaluation, nextLeadTarget) {
+function composeNextSession(nextLeadEvaluation, nextLeadTarget, locale) {
   if (!nextLeadTarget) {
     return 'Keep building history on incline before pushing.';
   }
   if (nextLeadEvaluation.allowed.includes('PUSH')) {
-    return `Push incline to ${nextLeadTarget.weightKg}kg if the first set stays at RPE 8 or lower.`;
+    return `Push incline to ${formatNumber(nextLeadTarget.weightKg, locale)}kg if the first set stays at RPE 8 or lower.`;
   }
-  return `Hold incline at ${nextLeadTarget.weightKg}kg and keep chasing clean reps.`;
+  return `Hold incline at ${formatNumber(nextLeadTarget.weightKg, locale)}kg and keep chasing clean reps.`;
 }
 
 /**
@@ -439,18 +453,19 @@ function composeNextSession(nextLeadEvaluation, nextLeadTarget) {
  * @param {import('../domain/rules/recap.js').RecapData} recap
  * @param {import('../domain/types.js').Evaluation} nextLeadEvaluation
  * @param {import('../domain/rules/target.js').Target | null} nextLeadTarget
+ * @param {import('../domain/copy.js').Locale} [locale]
  * @returns {RecapCopy}
  */
-export function composeRecap(recap, nextLeadEvaluation, nextLeadTarget) {
+export function composeRecap(recap, nextLeadEvaluation, nextLeadTarget, locale = DEFAULT_LOCALE) {
   const headline = composeHeadline(recap.rows);
   return {
     headline,
     rows: recap.rows.map((row) => ({
       exerciseName: row.exercise.name,
-      setsSummary: formatSetsSummary(row.setsToday),
-      status: composeRowStatus(row),
+      setsSummary: formatSetsSummary(row.setsToday, locale),
+      status: composeRowStatus(row, locale),
     })),
-    nextSession: composeNextSession(nextLeadEvaluation, nextLeadTarget),
+    nextSession: composeNextSession(nextLeadEvaluation, nextLeadTarget, locale),
     overall: composeOverall(headline),
   };
 }

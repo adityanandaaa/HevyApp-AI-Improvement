@@ -44,13 +44,13 @@ body {
 }
 
 .dev-toolbar__title {
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   font-weight: 600;
   margin: 0 0 8px;
 }
 
 .dev-toolbar__mock-tag {
-  font-size: var(--fs-small);
+  font-size: calc(var(--fs-small) * var(--text-scale));
   font-weight: 400;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -58,7 +58,74 @@ body {
 }
 
 .dev-toolbar__note {
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   color: var(--text-muted);
-  margin: 0;
+  margin: 0 0 16px;
+}
+
+.dev-toolbar__group {
+  margin-bottom: 16px;
+}
+
+.dev-toolbar__label {
+  font-size: calc(var(--fs-label) * var(--text-scale));
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+}
+
+.dev-toolbar__buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.dev-toolbar__buttons button {
+  flex: 1;
+  min-height: 36px;
+  padding: 0 6px;
+  border-radius: var(--radius-btn);
+  background: var(--raised);
+  border: none;
+  color: var(--text);
+  font-size: calc(var(--fs-small) * var(--text-scale));
+  cursor: pointer;
+}
+
+.dev-toolbar__buttons button[aria-pressed='true'] {
+  background: var(--raised);
+  color: var(--text);
+  box-shadow: inset 0 0 0 2px var(--blue);
+  font-weight: 700;
+}
+
+.dev-toolbar__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+#dev-toolbar-reset {
+  margin-top: 4px;
+}
+
+/* AC-65: force every animation/transition off, regardless of OS setting,
+   so reduced motion can be tested without changing the device. */
+:root.force-reduced-motion *,
+:root.force-reduced-motion *::before,
+:root.force-reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* AC-59: outline every tappable control this feature added, to check the
+   44x44pt minimum and 8pt spacing by eye. */
+:root.show-tap-targets button,
+:root.show-tap-targets input,
+:root.show-tap-targets [role='button'] {
+  outline: 1px solid #ff5566;
+  outline-offset: -1px;
 }

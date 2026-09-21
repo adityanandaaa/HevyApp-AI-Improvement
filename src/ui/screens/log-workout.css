@@ -9,13 +9,13 @@
 }
 
 .workout-stats dt {
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   color: var(--text-muted);
   margin: 0 0 2px;
 }
 
 .workout-stats__value {
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   font-weight: 600;
   margin: 0;
 }
@@ -39,14 +39,14 @@
   flex: 1;
   margin: 0;
   color: var(--blue);
-  font-size: var(--fs-exercise);
+  font-size: calc(var(--fs-exercise) * var(--text-scale));
   font-weight: 500;
 }
 
 .exercise-block__notes {
   margin: 10px 0 0;
   color: var(--text-muted);
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
 .exercise-block__rest {
@@ -54,7 +54,7 @@
   align-items: center;
   gap: 6px;
   color: var(--blue);
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   margin: 10px 0;
 }
 
@@ -65,7 +65,7 @@
 }
 
 .set-table th {
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--text-scale));
   text-transform: uppercase;
   color: var(--text-muted);
   font-weight: 400;
@@ -101,7 +101,7 @@
 
 .set-row__previous {
   color: var(--text-muted);
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
 .set-input {
@@ -111,7 +111,7 @@
   border: 1px solid var(--raised);
   background: transparent;
   color: var(--text);
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   text-align: center;
   font-family: inherit;
 }
@@ -136,6 +136,13 @@
 
 .set-row--done td {
   background: var(--done-row);
+}
+
+/* AC-56: --text-muted on --done-row is 4.03:1 (HANDOFF's own contrast table
+   doesn't cover this pairing) — just under the 4.5:1 minimum, so the
+   Previous column switches to full-strength text once a row is done. */
+.set-row--done .set-row__previous {
+  color: var(--text);
 }
 
 .set-row--done .set-input {
@@ -165,12 +172,12 @@
   background: var(--raised);
   border: none;
   color: var(--text);
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   cursor: pointer;
 }
 
 .rest-bar__time {
-  font-size: var(--fs-timer);
+  font-size: calc(var(--fs-timer) * var(--text-scale));
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   flex: 1;
@@ -223,7 +230,7 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  font-size: var(--fs-body);
+  font-size: calc(var(--fs-body) * var(--text-scale));
   font-weight: 700;
 }
 
@@ -243,7 +250,7 @@
 
 .docked-card__reason {
   margin: 10px 0 0;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
 .docked-card__why {
@@ -253,7 +260,7 @@
 
 .chips__heading {
   margin: 16px 0 10px;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   color: var(--text-muted);
 }
 
@@ -271,13 +278,13 @@
   background: var(--raised);
   border: none;
   color: var(--text);
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   cursor: pointer;
 }
 
 .chips__saved {
   margin: 16px 0 0;
-  font-size: var(--fs-secondary);
+  font-size: calc(var(--fs-secondary) * var(--text-scale));
   color: var(--text);
 }
 
@@ -296,6 +303,6 @@
 }
 
 .add-set-row__pain[aria-pressed='true'] {
-  background: var(--blue);
+  background: var(--blue-fill);
   color: var(--text);
 }
