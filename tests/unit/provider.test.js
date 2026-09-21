@@ -5,12 +5,13 @@ import { enforceGuardrails } from '../../src/reasoning/provider.js';
 /**
  * @param {import('../../src/domain/types.js').SignalLabel[]} allowed
  * @param {'none' | 'soft' | 'block'} [painEffect]
+ * @param {boolean} [historyBuilding]
  */
-function evaluationWith(allowed, painEffect = 'none') {
+function evaluationWith(allowed, painEffect = 'none', historyBuilding = false) {
   return /** @type {import('../../src/domain/types.js').Evaluation} */ ({
     exerciseId: 'x',
-    historyCount: 3,
-    historyBuilding: false,
+    historyCount: historyBuilding ? 2 : 3,
+    historyBuilding,
     allowed,
     blocked: [],
     painEffect,
@@ -47,5 +48,15 @@ describe('enforceGuardrails (architecture rule 3, HANDOFF section 5)', () => {
 
   it('a soft pain effect (secondary muscle overlap) does not suppress PROGRESS/PR', () => {
     expect(enforceGuardrails(evaluationWith(['HOLD', 'BACK_OFF'], 'soft'), 'PROGRESS')).toBe('PROGRESS');
+  });
+
+  it('regression, R4: PROGRESS/PR are suppressed for a history-building exercise, same as HOLD/BACK_OFF', () => {
+    // A history-building exercise's evaluate() result has allowed=[], which
+    // already blocks HOLD/BACK_OFF; PROGRESS/PR bypass that array on
+    // purpose, so historyBuilding needs its own explicit check.
+    const buildingHistory = evaluationWith([], 'none', true);
+    expect(enforceGuardrails(buildingHistory, 'HOLD')).toBeNull();
+    expect(enforceGuardrails(buildingHistory, 'PROGRESS')).toBeNull();
+    expect(enforceGuardrails(buildingHistory, 'PR')).toBeNull();
   });
 });

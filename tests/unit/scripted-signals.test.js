@@ -31,6 +31,17 @@ function normalSet(weightKg, reps, rpe) {
   return { type: 'normal', weightKg, reps, rpe };
 }
 
+/**
+ * Numbers a run of sets starting at 1, as if checked in order — the common
+ * case. For out-of-order/gapped cases, build the `{ setNumber, set }[]`
+ * array by hand instead (see the dedicated test below).
+ * @param {import('../../src/domain/types.js').SetEntry[]} sets
+ * @returns {{ setNumber: number, set: import('../../src/domain/types.js').SetEntry }[]}
+ */
+function numbered(sets) {
+  return sets.map((set, i) => ({ setNumber: i + 1, set }));
+}
+
 describe('set_checked reason text (HANDOFF section 8, scenario 2)', () => {
   it('matches the exact scripted example for a high-RPE HOLD', () => {
     const lastSet = normalSet(40, 10, 9);
@@ -63,7 +74,7 @@ describe('AC-68: set_checked reason text respects the locale', () => {
 
 describe('composeWhySheet (AC-18)', () => {
   it('matches the shape of the worked example (mockup 5) for a HOLD', () => {
-    const setsToday = [normalSet(40, 12, 7.5), normalSet(40, 10, 9)];
+    const setsToday = numbered([normalSet(40, 12, 7.5), normalSet(40, 10, 9)]);
     const copy = composeWhySheet({ trigger: 'set_checked', exercise: incline, evaluation, target }, 'HOLD', setsToday);
 
     expect(copy.title).toBe('Why HOLD?');
@@ -73,10 +84,30 @@ describe('composeWhySheet (AC-18)', () => {
   });
 
   it('produces a BACK_OFF why-sheet mentioning the exercise', () => {
-    const setsToday = [normalSet(40, 10, 7), normalSet(40, 7, 7)];
+    const setsToday = numbered([normalSet(40, 10, 7), normalSet(40, 7, 7)]);
     const copy = composeWhySheet({ trigger: 'set_checked', exercise: incline, evaluation, target }, 'BACK_OFF', setsToday);
 
     expect(copy.title).toBe('Why BACK OFF?');
     expect(copy.recommendation).toContain(incline.name);
+  });
+
+  it('regression: labels the set by its real row number, not array position, when earlier sets were skipped', () => {
+    // Only set 3 was ever checked today (sets 1-2 skipped) — the signal card
+    // says "Set 3 was RPE 9...", so the Why sheet must not say "Set 1".
+    const setsToday = [{ setNumber: 3, set: normalSet(40, 10, 9) }];
+    const copy = composeWhySheet({ trigger: 'set_checked', exercise: incline, evaluation, target }, 'HOLD', setsToday);
+
+    expect(copy.whatIDid).toBe('Set 3: 40kg × 10 at RPE 9.');
+  });
+
+  it('regression: lists non-contiguous set numbers explicitly rather than claiming a range', () => {
+    // Set 2 was skipped; sets 1 and 3 were checked.
+    const setsToday = [
+      { setNumber: 1, set: normalSet(40, 12, 7) },
+      { setNumber: 3, set: normalSet(40, 9, 9) },
+    ];
+    const copy = composeWhySheet({ trigger: 'set_checked', exercise: incline, evaluation, target }, 'HOLD', setsToday);
+
+    expect(copy.whatIDid).toBe('Sets 1, 3: 40kg × 12, 40kg × 9 at RPE 7 and 9.');
   });
 });

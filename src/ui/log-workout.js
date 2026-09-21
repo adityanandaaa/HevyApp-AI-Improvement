@@ -26,6 +26,7 @@ import {
   setSignal,
   setsLoggedBefore,
   setsLoggedToday,
+  setsLoggedTodayWithNumbers,
   startRestTimer,
   state,
   tickRestTimer,
@@ -381,7 +382,7 @@ function openWhySheet() {
     const evaluateInput = buildEvaluateInput();
     const evaluation = evaluate(evaluateInput, exercise.id);
     const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
-    const setsToday = setsLoggedToday(exercise.id);
+    const setsToday = setsLoggedTodayWithNumbers(exercise.id);
     copy = composeWhySheet(
       { trigger: 'set_checked', exercise, evaluation, target, locale: state.locale },
       state.signal.label,

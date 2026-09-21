@@ -59,6 +59,19 @@ test.describe('axe accessibility scan (AC-56, AC-57, M7)', () => {
     expect(results.violations).toEqual([]);
   });
 
+  test('the PR/PROGRESS celebration card is axe clean', async ({ page }) => {
+    await page.goto('/');
+    await goToLogWorkout(page);
+    const row = page.locator('.exercise-block[data-exercise="incline-bench-press"] .set-row[data-set="3"]');
+    await row.locator('.set-input--weight').fill('44');
+    await row.locator('.set-input--rpe').fill('7');
+    await row.locator('.check-btn').click();
+    await page.waitForSelector('#docked-card:not([hidden])');
+    await page.waitForTimeout(250);
+    const results = await runAxe(page);
+    expect(results.violations).toEqual([]);
+  });
+
   test('the Pain-reported card is axe clean', async ({ page }) => {
     await page.goto('/');
     await goToLogWorkout(page);

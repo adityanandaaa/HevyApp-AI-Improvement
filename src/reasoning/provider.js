@@ -21,13 +21,18 @@
  * HOLD would make a signal appear on every set checked, since HOLD is
  * allowed for almost every evaluation.
  *
- * PROGRESS and PR are exempt from the evaluation.allowed check: `allowed`
- * gates *forward-looking* recommendations (is it safe to suggest pushing
- * further), but PROGRESS/PR only report what already happened in a set the
- * user already chose to do — there's nothing to unlock or make unsafe by
- * reporting it. R10 still blocks PUSH and PR when pain is reported, and
- * AC-34's spirit (never encourage pushing through pain) extends that same
- * caution to PROGRESS.
+ * PROGRESS and PR are exempt from the evaluation.allowed check specifically
+ * (not from every guardrail): `allowed` gates *forward-looking*
+ * recommendations (is it safe to suggest pushing further), but PROGRESS/PR
+ * only report what already happened in a set the user already chose to do —
+ * there's nothing to unlock or make unsafe by reporting it. R10 still blocks
+ * PUSH and PR when pain is reported, and AC-34's spirit (never encourage
+ * pushing through pain) extends that same caution to PROGRESS. R4 still
+ * applies too: "no signal is shown" for an exercise with fewer than 3
+ * sessions is unconditional, not just a PUSH/HOLD/BACK_OFF rule — HOLD and
+ * BACK_OFF get this for free from `allowed` being empty while
+ * historyBuilding, but PROGRESS/PR bypass that array, so it's checked here
+ * explicitly.
  * @param {Evaluation} evaluation
  * @param {SignalLabel | null} label
  * @returns {SignalLabel | null}
@@ -35,6 +40,7 @@
 export function enforceGuardrails(evaluation, label) {
   if (label === null) return null;
   if (label === 'PROGRESS' || label === 'PR') {
+    if (evaluation.historyBuilding) return null;
     return evaluation.painEffect === 'block' ? null : label;
   }
   if (evaluation.allowed.includes(label)) return label;

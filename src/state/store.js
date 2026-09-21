@@ -138,6 +138,21 @@ export function setsLoggedToday(exerciseId) {
 }
 
 /**
+ * Like `setsLoggedToday`, but keeps each set's actual row number attached —
+ * needed wherever sets might not have been checked in order (e.g. set 3
+ * checked without 1/2), so "Set N" text doesn't fall back to array position.
+ * @param {string} exerciseId
+ * @returns {{ setNumber: number, set: SetEntry }[]} in row order
+ */
+export function setsLoggedTodayWithNumbers(exerciseId) {
+  const bySetNumber = state.todaysSetsByExercise[exerciseId] ?? {};
+  return Object.keys(bySetNumber)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map((setNumber) => ({ setNumber, set: /** @type {SetEntry} */ (bySetNumber[setNumber]) }));
+}
+
+/**
  * @param {string} exerciseId
  * @param {number} setNumber
  * @returns {SetEntry[]} sets logged today for this exercise, at a row position before setNumber

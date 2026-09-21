@@ -254,14 +254,30 @@ export function composeTodaysFocusCopy(data, locale = DEFAULT_LOCALE) {
 }
 
 /**
- * @param {import('../domain/types.js').SetEntry[]} sets
+ * "Set 3" for one set, "Sets 1 to 3" for a contiguous run, or "Sets 1, 3" if
+ * there's a gap (e.g. set 2 was never checked) — using the sets' own row
+ * numbers rather than assuming they were checked in order from 1.
+ * @param {number[]} setNumbers in ascending order
+ * @returns {string}
+ */
+function setNumberLabel(setNumbers) {
+  const first = setNumbers[0];
+  if (first === undefined) return 'No sets'; // defensive: shouldn't happen, the Why? sheet only opens after a check
+  if (setNumbers.length === 1) return `Set ${first}`;
+  const last = setNumbers[setNumbers.length - 1];
+  const isContiguous = setNumbers.every((n, i) => i === 0 || n === (setNumbers[i - 1] ?? n - 1) + 1);
+  return isContiguous ? `Sets ${first} to ${last}` : `Sets ${setNumbers.join(', ')}`;
+}
+
+/**
+ * @param {{ setNumber: number, set: import('../domain/types.js').SetEntry }[]} setsToday
  * @param {import('../domain/copy.js').Locale} locale
  * @returns {string}
  */
-function describeSetsToday(sets, locale) {
-  const parts = sets.map((s) => `${formatNumber(s.weightKg, locale)}kg × ${s.reps}`);
-  const rpes = sets.map((s) => formatNumber(s.rpe, locale));
-  const setLabel = sets.length === 1 ? 'Set 1' : `Sets 1 to ${sets.length}`;
+function describeSetsToday(setsToday, locale) {
+  const parts = setsToday.map(({ set }) => `${formatNumber(set.weightKg, locale)}kg × ${set.reps}`);
+  const rpes = setsToday.map(({ set }) => formatNumber(set.rpe, locale));
+  const setLabel = setNumberLabel(setsToday.map((s) => s.setNumber));
   const rpeLabel = rpes.length === 1 ? `RPE ${rpes[0]}` : `RPE ${joinNames(rpes)}`;
   return `${setLabel}: ${parts.join(', ')} at ${rpeLabel}.`;
 }
@@ -283,18 +299,21 @@ function describeSetsToday(sets, locale) {
  * following the same shape.
  * @param {ReasoningInput} input
  * @param {SignalLabel} label
- * @param {import('../domain/types.js').SetEntry[]} setsToday this exercise's
- *   working sets logged today so far, in order (including the one just checked)
+ * @param {{ setNumber: number, set: import('../domain/types.js').SetEntry }[]} setsToday
+ *   this exercise's working sets logged today so far, in row order
+ *   (including the one just checked), each tagged with its actual row
+ *   number — sets aren't always checked in order starting from 1
  * @returns {WhySheetCopy}
  */
 export function composeWhySheet(input, label, setsToday) {
   const locale = input.locale ?? DEFAULT_LOCALE;
   const title = `Why ${displayLabel(label)}?`;
   const whatIDid = describeSetsToday(setsToday, locale);
-  const lastSet = setsToday[setsToday.length - 1];
+  const lastEntry = setsToday[setsToday.length - 1];
+  const lastSet = lastEntry?.set;
 
   if (label === 'HOLD' && lastSet) {
-    const first = setsToday[0]?.rpe;
+    const first = setsToday[0]?.set.rpe;
     const calculated =
       setsToday.length > 1
         ? `RPE rose from ${formatNumber(first ?? lastSet.rpe, locale)} to ${formatNumber(lastSet.rpe, locale)} across the ${setsToday.length} sets.`
@@ -332,7 +351,7 @@ export function composeWhySheet(input, label, setsToday) {
   }
 
   const previous = lastSet
-    ? [...setsToday.slice(0, -1)].reverse().find((s) => s.weightKg === lastSet.weightKg)
+    ? [...setsToday.slice(0, -1)].reverse().find(({ set }) => set.weightKg === lastSet.weightKg)?.set
     : undefined;
   return {
     title,
