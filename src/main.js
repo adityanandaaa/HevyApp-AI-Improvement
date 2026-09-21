@@ -1,31 +1,15 @@
 // Screen navigation and small cosmetic toggles, plus rendering Today's Focus
-// and the direction lines (M3), and the signal card / rest timer / Why?
-// sheet interactions (M4). Pain (M5) and a real Recap (M6) arrive later.
+// and the direction lines (M3), the signal card / rest timer / Why? sheet
+// interactions (M4), Pain (M5) and the session recap (M6).
 
 import { renderApp } from './ui/render.js';
 import { initLogWorkoutInteractions } from './ui/log-workout.js';
+import { initRecapInteractions } from './ui/recap.js';
+import { showScreen } from './ui/navigation.js';
 
 renderApp();
 initLogWorkoutInteractions();
-
-/** @type {NodeListOf<HTMLElement>} */
-const screens = document.querySelectorAll('.screen');
-
-/** @param {string} name */
-function showScreen(name) {
-  for (const screen of screens) {
-    screen.hidden = screen.dataset.screen !== name;
-  }
-  for (const tabButton of document.querySelectorAll('.tab-bar__item')) {
-    if (tabButton instanceof HTMLElement) {
-      if (tabButton.dataset.nav === name) {
-        tabButton.setAttribute('aria-current', 'page');
-      } else {
-        tabButton.removeAttribute('aria-current');
-      }
-    }
-  }
-}
+initRecapInteractions();
 
 for (const button of document.querySelectorAll('[data-nav]')) {
   if (button instanceof HTMLButtonElement && !button.disabled) {

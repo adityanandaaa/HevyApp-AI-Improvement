@@ -302,3 +302,155 @@ export function composePainWhySheet(exercise) {
     recommendation: COPY.painReported,
   };
 }
+
+/**
+ * @param {number} weightKg
+ * @returns {string}
+ */
+function weightLabel(weightKg) {
+  return weightKg === 0 ? 'Bodyweight' : `${weightKg}kg`;
+}
+
+/**
+ * AC-44: "one row per exercise (name, sets summary such as '65kg x 8 x 3',
+ * and a status)". Matches mockup 7's format: a shared weight collapses to
+ * "Wkg x R x N" (or "Wkg x R1, R2, R3" if reps differ), otherwise each set
+ * is listed individually. Weight 0 shows as "Bodyweight" (HANDOFF section 8).
+ * @param {import('../domain/types.js').SetEntry[]} setsToday
+ * @returns {string}
+ */
+function formatSetsSummary(setsToday) {
+  if (setsToday.length === 0) return 'Not logged';
+
+  const weights = setsToday.map((s) => s.weightKg);
+  const reps = setsToday.map((s) => s.reps);
+  const sameWeight = weights.every((w) => w === weights[0]);
+
+  if (sameWeight) {
+    const sameReps = reps.every((r) => r === reps[0]);
+    const first = weights[0];
+    if (first === undefined) return 'Not logged';
+    if (sameReps) {
+      return `${weightLabel(first)} × ${reps[0]} × ${setsToday.length}`;
+    }
+    return `${weightLabel(first)} × ${reps.join(', ')}`;
+  }
+
+  return setsToday.map((s) => `${weightLabel(s.weightKg)} × ${s.reps}`).join(', ');
+}
+
+/**
+ * INTERPRETATION: see HANDOFF section 7 (R13). Mockup 7's row statuses are a
+ * single fully-scripted scenario; this generalises the same shape (what
+ * happened, what to do with it) to whatever was actually logged.
+ * @param {import('../domain/rules/recap.js').RecapRow} row
+ * @returns {string}
+ */
+function composeRowStatus(row) {
+  const { evaluation, target, setsToday, historyCountBeforeToday } = row;
+
+  if (evaluation.historyBuilding) {
+    const newCount = historyCountBeforeToday + (setsToday.length > 0 ? 1 : 0);
+    return `History building: now ${newCount} of 3 sessions.`;
+  }
+  if (setsToday.length === 0) {
+    return 'Not logged this session.';
+  }
+
+  const maxRpe = Math.max(...setsToday.map((s) => s.rpe));
+  const workingWeightToday = Math.max(...setsToday.map((s) => s.weightKg));
+  const label = weightLabel(workingWeightToday).toLowerCase();
+
+  if (maxRpe >= 9) {
+    return `Held at ${label}. RPE rose to ${maxRpe} on the last set.`;
+  }
+  if (evaluation.allowed.includes('PUSH') && target) {
+    return workingWeightToday >= target.weightKg
+      ? `Pushed to ${label}. Nice work.`
+      : `Held at ${label}. Skipped the push today.`;
+  }
+  return `Steady. Keep ${label} next session.`;
+}
+
+/**
+ * INTERPRETATION: see HANDOFF section 7. The headline is "scripted per
+ * scenario" (R13) — with no scenario system built (see README), this
+ * derives a 3-word-or-fewer headline from what was actually logged.
+ * @param {import('../domain/rules/recap.js').RecapRow[]} rows
+ * @returns {string}
+ */
+function composeHeadline(rows) {
+  const anyLogged = rows.some((row) => row.setsToday.length > 0);
+  if (!anyLogged) return 'Quiet session.';
+
+  const anyHighRpe = rows.some((row) => row.setsToday.some((set) => set.rpe >= 9));
+  if (anyHighRpe) return 'Tough session.';
+
+  return 'Strong session.';
+}
+
+/**
+ * @param {string} headline
+ * @returns {string}
+ */
+function composeOverall(headline) {
+  if (headline === 'Tough session.') return 'Solid effort. Let the lighter lifts stay easy before pushing again.';
+  if (headline === 'Quiet session.') return 'No sets logged today.';
+  return 'Good session. Keep the lighter lifts steady.';
+}
+
+/**
+ * AC-44/section 9: the exact worked example is "Push incline to 42kg if the
+ * first set stays at RPE 8 or lower." — reproduced here whenever next
+ * session's evaluation (with today's session already counted) agrees.
+ * @param {import('../domain/types.js').Evaluation} nextLeadEvaluation
+ * @param {import('../domain/rules/target.js').Target | null} nextLeadTarget
+ * @returns {string}
+ */
+function composeNextSession(nextLeadEvaluation, nextLeadTarget) {
+  if (!nextLeadTarget) {
+    return 'Keep building history on incline before pushing.';
+  }
+  if (nextLeadEvaluation.allowed.includes('PUSH')) {
+    return `Push incline to ${nextLeadTarget.weightKg}kg if the first set stays at RPE 8 or lower.`;
+  }
+  return `Hold incline at ${nextLeadTarget.weightKg}kg and keep chasing clean reps.`;
+}
+
+/**
+ * @typedef {object} RecapRowCopy
+ * @property {string} exerciseName
+ * @property {string} setsSummary
+ * @property {string} status
+ */
+
+/**
+ * @typedef {object} RecapCopy
+ * @property {string} headline
+ * @property {RecapRowCopy[]} rows
+ * @property {string} nextSession
+ * @property {string} overall
+ */
+
+/**
+ * R13: composes the full recap from its data (domain/rules/recap.js) plus
+ * next session's lead-exercise evaluation (computed with today's session
+ * already appended to history, so it reflects AC-46).
+ * @param {import('../domain/rules/recap.js').RecapData} recap
+ * @param {import('../domain/types.js').Evaluation} nextLeadEvaluation
+ * @param {import('../domain/rules/target.js').Target | null} nextLeadTarget
+ * @returns {RecapCopy}
+ */
+export function composeRecap(recap, nextLeadEvaluation, nextLeadTarget) {
+  const headline = composeHeadline(recap.rows);
+  return {
+    headline,
+    rows: recap.rows.map((row) => ({
+      exerciseName: row.exercise.name,
+      setsSummary: formatSetsSummary(row.setsToday),
+      status: composeRowStatus(row),
+    })),
+    nextSession: composeNextSession(nextLeadEvaluation, nextLeadTarget),
+    overall: composeOverall(headline),
+  };
+}

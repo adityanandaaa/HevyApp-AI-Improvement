@@ -1,5 +1,6 @@
 /** @typedef {import('../domain/types.js').SetEntry} SetEntry */
 /** @typedef {import('../domain/types.js').ExerciseLog} ExerciseLog */
+/** @typedef {import('../domain/types.js').Session} Session */
 /** @typedef {import('../domain/types.js').SignalLabel} SignalLabel */
 /** @typedef {import('../domain/types.js').PainState} PainState */
 
@@ -44,6 +45,7 @@ import { PUSH_DAY_SESSIONS } from '../data/sessions.js';
 
 /**
  * @typedef {object} State
+ * @property {Session[]} sessions completed sessions, oldest first; grows by one each Finish (AC-46)
  * @property {Record<string, Record<number, SetEntry>>} todaysSetsByExercise exerciseId -> { setNumber: SetEntry }
  * @property {PainState[]} painReports R10: pain reports so far this session
  * @property {SignalState | null} signal
@@ -54,6 +56,7 @@ import { PUSH_DAY_SESSIONS } from '../data/sessions.js';
 
 /** @type {State} */
 export const state = {
+  sessions: [...PUSH_DAY_SESSIONS],
   todaysSetsByExercise: {},
   painReports: [],
   signal: null,
@@ -71,7 +74,7 @@ export const state = {
 export function buildEvaluateInput() {
   return {
     routineExercises: PUSH_DAY_EXERCISES,
-    sessions: PUSH_DAY_SESSIONS,
+    sessions: state.sessions,
     todaysLogs: todaysLogs(),
     painReports: state.painReports,
   };
@@ -212,8 +215,50 @@ export function endRestTimer() {
   state.restTimer.remainingSeconds = 0;
 }
 
+/**
+ * @typedef {object} FinishResult
+ * @property {Session[]} sessionsBeforeToday
+ * @property {Record<string, SetEntry[]>} todaysSetsByExercise exerciseId -> sets, snapshotted before clearing
+ * @property {Session[]} sessionsAfterToday including the session just finished
+ */
+
+/**
+ * AC-43/R13: ends the session — today's logs become a new completed
+ * session (AC-46: the next evaluation already includes it) — and clears
+ * today's in-progress state. Returns what the recap is built from; the
+ * wording itself is composed by the caller (reasoning/scripted.js
+ * composeRecap), keeping this module state-only.
+ * @returns {FinishResult}
+ */
+export function finishSession() {
+  const sessionsBeforeToday = state.sessions;
+  /** @type {Record<string, SetEntry[]>} */
+  const todaysSetsByExerciseSnapshot = {};
+  for (const exercise of PUSH_DAY_EXERCISES) {
+    todaysSetsByExerciseSnapshot[exercise.id] = setsLoggedToday(exercise.id);
+  }
+
+  /** @type {Session} */
+  const newSession = {
+    id: `today-${sessionsBeforeToday.length + 1}`,
+    dateISO: new Date().toISOString().slice(0, 10),
+    logs: todaysLogs(),
+  };
+  const sessionsAfterToday = [...sessionsBeforeToday, newSession];
+
+  state.sessions = sessionsAfterToday;
+  state.todaysSetsByExercise = {};
+  state.painReports = [];
+  state.signal = null;
+  state.chips = null;
+  state.restTimer = null;
+
+  return { sessionsBeforeToday, todaysSetsByExercise: todaysSetsByExerciseSnapshot, sessionsAfterToday };
+}
+
 /** Test-only: returns the module to a fresh session. */
 export function resetState() {
+  state.sessions = [...PUSH_DAY_SESSIONS];
   state.todaysSetsByExercise = {};
   state.painReports = [];
   state.signal = null;

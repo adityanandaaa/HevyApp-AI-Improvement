@@ -3,7 +3,6 @@
 /** @typedef {import('../domain/types.js').SignalLabel} SignalLabel */
 
 import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
-import { PUSH_DAY_SESSIONS } from '../data/sessions.js';
 import { CHIP_LABELS, COPY, displayLabel } from '../domain/copy.js';
 import { shouldShowChips, chipsHeadingKind } from '../domain/rules/chips.js';
 import { evaluate } from '../domain/rules/evaluate.js';
@@ -191,7 +190,7 @@ function computeSignal(exercise, checkedSet, setNumber) {
   const label = enforceGuardrails(evaluation, candidate);
   if (!label) return null;
 
-  const target = computeTarget(exercise, PUSH_DAY_SESSIONS, evaluation);
+  const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
   const reason = explain({ trigger: 'set_checked', exercise, evaluation, lastSet: checkedSet, target, setNumber }, label);
   return { label, reason };
 }
@@ -205,10 +204,10 @@ function computeSignal(exercise, checkedSet, setNumber) {
 function computeChips(exercise, checkedSet, setNumber) {
   const evaluateInput = buildEvaluateInput();
   const evaluation = evaluate(evaluateInput, exercise.id);
-  const target = computeTarget(exercise, PUSH_DAY_SESSIONS, evaluation);
+  const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
   if (!target) return null;
 
-  const [mostRecentLog] = lastNLogs(PUSH_DAY_SESSIONS, exercise.id, 1);
+  const [mostRecentLog] = lastNLogs(evaluateInput.sessions, exercise.id, 1);
   const lastSessionWorkingWeightKg = mostRecentLog ? workingWeight(mostRecentLog) : null;
   const previousWeightKg = mostRecentLog?.sets[setNumber - 1]?.weightKg ?? checkedSet.weightKg;
 
@@ -334,7 +333,7 @@ function openWhySheet() {
   } else {
     const evaluateInput = buildEvaluateInput();
     const evaluation = evaluate(evaluateInput, exercise.id);
-    const target = computeTarget(exercise, PUSH_DAY_SESSIONS, evaluation);
+    const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
     const setsToday = setsLoggedToday(exercise.id);
     copy = composeWhySheet({ trigger: 'set_checked', exercise, evaluation, target }, state.signal.label, setsToday);
   }

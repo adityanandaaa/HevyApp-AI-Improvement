@@ -36,20 +36,23 @@ src/
   main.js              screen navigation, cosmetic toggles, calls ui/render.js
                          and ui/log-workout.js
   ui/
-    render.js            bridges evaluate()/reasoning into the DOM (no rules here)
-    log-workout.js         signal card, chips, Why? sheet, rest timer (M4),
-                             the Pain toggle (M5)
-    signal-icons.js          SignalLabel -> sprite symbol id
-    timing.js                  TIMING constants (section 9)
-    tokens.css                  design tokens (section 10 of HANDOFF.md)
-    layout.css                    phone frame and dev toolbar layout
-    components.css                  shared button/card/icon/tab-bar/
-                                      Today's-Focus/direction-line/docked-card/
-                                      chips/sheet styles
+    navigation.js         showScreen(), shared by main.js and ui/recap.js
+    render.js               bridges evaluate()/reasoning into the DOM (no rules here)
+    log-workout.js            signal card, chips, Why? sheet, rest timer (M4),
+                                the Pain toggle (M5)
+    recap.js                    Finish -> recap screen -> Done (M6)
+    signal-icons.js                SignalLabel -> sprite symbol id
+    timing.js                        TIMING constants (section 9)
+    tokens.css                         design tokens (section 10 of HANDOFF.md)
+    layout.css                           phone frame and dev toolbar layout
+    components.css                         shared button/card/icon/tab-bar/
+                                             Today's-Focus/direction-line/
+                                             docked-card/chips/sheet styles
     screens/
-      home.css                         Home tab
-      workout.css                        Workout tab
-      log-workout.css                      Log Workout screen + signal card
+      home.css                                Home tab
+      workout.css                               Workout tab
+      log-workout.css                             Log Workout screen + signal card
+      recap.css                                     Session recap
     devtoolbar/            (not yet built — see Interpretations)
   domain/                pure JS, no DOM, unit tested
     types.js               JSDoc typedefs (section 6 of HANDOFF.md)
@@ -66,18 +69,21 @@ src/
       todays-focus.js                   R14 (push/hold/building lists)
       signal-trigger.js                   R12 (reactive HOLD/BACK_OFF triggers)
       chips.js                             R11 (reason-chip eligibility)
+      recap.js                              R13 (per-exercise recap data)
   reasoning/
     provider.js            ReasoningProvider interface + enforceGuardrails()
     scripted.js              prototype implementation: choose(), explain(),
-                               composeTodaysFocusCopy(), composeWhySheet()
+                               composeTodaysFocusCopy(), composeWhySheet(),
+                               composePainWhySheet(), composeRecap()
   data/
     exercises.js            MOCK Push Day routine (section 8)
     sessions.js              MOCK S-3/S-2/S-1 sessions (section 8)
     scenarios.js               MOCK dev-toolbar scenarios (not yet built)
   state/
-    store.js                 mutable session-scoped state: today's logged
-                               sets, pain reports, the active signal/chips,
-                               the rest timer
+    store.js                 mutable session-scoped state: completed sessions
+                               (grows on Finish, AC-46), today's logged sets,
+                               pain reports, the active signal/chips, the
+                               rest timer
 scripts/
   dev-server.js          zero-dependency static file server for local dev
 tests/
@@ -237,6 +243,33 @@ M5 additions:
   exercise's wording. Today's Focus is not re-rendered on pain, since it's
   a pre-workout view HANDOFF doesn't ask to update mid-session.
 
+M6 additions:
+
+- **The recap headline and row statuses are generated, not scripted per a
+  fixed scenario.** R13 says the headline is "scripted per scenario";
+  without a scenario system (see M4's interpretations), this derives a
+  headline and each row's status from whatever was actually logged, using
+  the same shape as mockup 7's one fully-worked example (what happened, in
+  <=3 words / <=60 chars). Any real session the reviewer runs through
+  produces a truthful recap rather than always replaying one fixed script.
+- **Finish makes today's log a real completed session**
+  (`state.sessions` is now mutable; `finishSession()` in `state/store.js`
+  appends it and clears today's in-progress state). AC-46 needs the next
+  Today's Focus to reflect this session "without any action from me" —
+  the only way to satisfy that honestly is for the session to actually
+  join history, so `evaluate()`'s "last three sessions" naturally shifts.
+  Verified end to end by a test that pushes Incline to 42kg, finishes, and
+  checks Today's Focus now says HOLD (the push gate needs 3 sessions at
+  the *same* weight, and 42kg is new).
+- **`showScreen` moved to `ui/navigation.js`.** It was a `main.js`-local
+  function through M5; the recap's Done button needed to navigate from a
+  different module, so it's now a small shared module instead of
+  duplicating the screen-switching logic.
+- **An exercise with nothing logged today still gets a row** ("Not
+  logged"/"Not logged this session."), since AC-45 requires all six Push
+  Day rows regardless of whether the reviewer's test run touched every
+  exercise.
+
 ## Milestones
 
 Tracking `HANDOFF.md` section 11. Each milestone is reviewed before starting the
@@ -248,6 +281,6 @@ next.
 - [x] M3 — Today's Focus and direction line
 - [x] M4 — Signals
 - [x] M5 — Pain
-- [ ] M6 — Recap
+- [x] M6 — Recap
 - [ ] M7 — Accessibility and QA
 - [ ] M8 — Live model (optional)

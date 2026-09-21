@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/src/ui/screens/home.css" />
     <link rel="stylesheet" href="/src/ui/screens/workout.css" />
     <link rel="stylesheet" href="/src/ui/screens/log-workout.css" />
+    <link rel="stylesheet" href="/src/ui/screens/recap.css" />
   </head>
   <body>
     <div class="page">
@@ -709,6 +710,16 @@
             <span class="rest-bar__time" id="rest-bar-time">2:00</span>
             <button class="rest-bar__adjust" type="button" id="rest-bar-plus" aria-label="Add 15 seconds">+15</button>
             <button class="btn-primary btn-primary--pill" type="button" id="rest-bar-skip">Skip</button>
+          </div>
+        </section>
+
+        <!-- ===== Session recap (AC-43 to AC-46) ===== -->
+        <section class="screen" id="screen-recap" data-screen="recap" hidden>
+          <header class="top-bar recap-top-bar">
+            <span class="top-bar__title">Session recap</span>
+          </header>
+          <div class="screen__body recap-body" id="recap-body">
+            <!-- Filled by src/ui/recap.js -->
           </div>
         </section>
 
