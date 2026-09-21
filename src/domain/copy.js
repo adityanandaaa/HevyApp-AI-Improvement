@@ -42,7 +42,7 @@ export const LIMITS = {
   recapHeadlineWords: 3,
 };
 
-/** In order, per HANDOFF section 9. */
+/** In order, per HANDOFF section 9 (AC-37: exactly six, for the general case). */
 export const CHIP_LABELS = [
   'Too tired',
   'Poor sleep',
@@ -51,6 +51,32 @@ export const CHIP_LABELS = [
   'Changed my mind',
   'Other',
 ];
+
+/**
+ * INTERPRETATION: an extra chip Aditya asked for live (see
+ * docs/DECISIONS.md) — shown only under the "Why did you skip the push?"
+ * heading, since "kept the regular weight" isn't a sensible answer to
+ * "Why did you change the weight?" in general (e.g. a weight increase).
+ * AC-37's "exactly six chips" is unchanged for that general case
+ * (`CHIP_LABELS` above, used as-is).
+ */
+export const PUSH_SKIPPED_CHIP_LABELS = [
+  'Too tired',
+  'Poor sleep',
+  "Didn't feel ready",
+  'Pain/discomfort',
+  'Changed my mind',
+  'Regular weight',
+  'Other',
+];
+
+/**
+ * @param {'push_skipped' | 'other_change'} headingKind
+ * @returns {string[]}
+ */
+export function chipLabelsFor(headingKind) {
+  return headingKind === 'push_skipped' ? PUSH_SKIPPED_CHIP_LABELS : CHIP_LABELS;
+}
 
 export const COPY = {
   startRoutine: 'Start Routine',

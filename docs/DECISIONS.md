@@ -42,3 +42,25 @@ happened rather than recommending what to do next — but still suppresses
 them when pain is reported, per R10/AC-34), `src/reasoning/scripted.js`
 (reason text + Why? sheet content for both labels), `src/domain/rules/
 history.js` (`allTimeMaxWorkingWeight`).
+
+## A seventh chip, "Regular weight", for the "skip the push" case only
+
+**Date:** 2026-09-21 (same session, immediately after the above)
+
+**What changed:** AC-37 fixes the chip list at exactly six, in order:
+Too tired, Poor sleep, Didn't feel ready, Pain/discomfort, Changed my mind,
+Other. None of the six covers the common, non-negative reason "I deliberately
+stuck with my usual weight" — the closest fit, "Changed my mind", implies
+indecision rather than a considered choice.
+
+**Decision (Aditya, live in the app):** add "Regular weight" as a seventh
+chip, positioned before "Other", but *only* when the heading is "Why did you
+skip the push?" (`push_skipped`). The general "Why did you change the
+weight?" heading (`other_change`) keeps HANDOFF's original six exactly — the
+new chip doesn't make sense there (e.g. when the change was upward, now also
+covered by the PROGRESS/PR case above rather than chips at all).
+
+**Implementation:** `src/domain/copy.js` — `CHIP_LABELS` (six, unchanged) vs.
+`PUSH_SKIPPED_CHIP_LABELS` (seven), selected by the new `chipLabelsFor()`
+helper; `src/ui/log-workout.js`'s docked-card renderer calls it instead of
+using `CHIP_LABELS` directly.

@@ -46,7 +46,9 @@ describe('signal card, chips, Why? sheet and rest timer (M4)', () => {
     expect(card.hidden).toBe(false);
     expect(card.querySelector('.docked-card__signal strong')).toBeNull();
     expect(card.querySelector('.chips__heading')?.textContent).toBe('Why did you skip the push?');
-    expect(card.querySelectorAll('.chip').length).toBe(6);
+    // 7 for "skip the push": HANDOFF's original six plus "Regular weight"
+    // (docs/DECISIONS.md). The general "other change" case stays at six.
+    expect(card.querySelectorAll('.chip').length).toBe(7);
   });
 
   it('does not show chips for the ramp set (set 1, 30kg)', () => {

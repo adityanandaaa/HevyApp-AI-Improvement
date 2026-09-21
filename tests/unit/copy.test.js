@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CHIP_LABELS, COPY, LIMITS, formatNumber } from '../../src/domain/copy.js';
+import { CHIP_LABELS, COPY, LIMITS, PUSH_SKIPPED_CHIP_LABELS, chipLabelsFor, formatNumber } from '../../src/domain/copy.js';
 
 describe('T13: locale-aware number formatting', () => {
   it('formats 62.5 as "62,5" under id-ID', () => {
@@ -35,13 +35,13 @@ describe('T11: fixed copy stays within the character limits (HANDOFF section 9)'
   });
 
   it('chip labels and the chip-saved confirmation fit the signal reason limit', () => {
-    for (const label of CHIP_LABELS) {
+    for (const label of PUSH_SKIPPED_CHIP_LABELS) {
       expect(label.length).toBeLessThanOrEqual(LIMITS.signalReason);
     }
     expect(COPY.chipSaved('Pain/discomfort').length).toBeLessThanOrEqual(LIMITS.signalReason);
   });
 
-  it('there are exactly six chips, in the required order', () => {
+  it('AC-37: there are exactly six chips, in the required order, for the general "other change" case', () => {
     expect(CHIP_LABELS).toEqual([
       'Too tired',
       'Poor sleep',
@@ -55,5 +55,24 @@ describe('T11: fixed copy stays within the character limits (HANDOFF section 9)'
   it('the chip headings match HANDOFF exactly', () => {
     expect(COPY.chipsHeadingPushSkipped).toBe('Why did you skip the push?');
     expect(COPY.chipsHeadingOtherChange).toBe('Why did you change the weight?');
+  });
+});
+
+describe('"Regular weight" extra chip (docs/DECISIONS.md)', () => {
+  it('only appears under the "skip the push" heading, as the 6th of 7, before "Other"', () => {
+    expect(chipLabelsFor('push_skipped')).toEqual([
+      'Too tired',
+      'Poor sleep',
+      "Didn't feel ready",
+      'Pain/discomfort',
+      'Changed my mind',
+      'Regular weight',
+      'Other',
+    ]);
+  });
+
+  it('does not appear for the general "other change" heading, which keeps HANDOFF\'s original six', () => {
+    expect(chipLabelsFor('other_change')).toBe(CHIP_LABELS);
+    expect(chipLabelsFor('other_change')).not.toContain('Regular weight');
   });
 });

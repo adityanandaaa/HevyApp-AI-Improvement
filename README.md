@@ -375,7 +375,7 @@ needs Aditya, either on a real device or by eye.
 | AC-34 | ✅ | `pain.test.js` greps the Why? sheet for diagnostic/treatment language |
 | AC-35 | 👁 | By construction — KG/REPS/RPE are plain `<input>`s, never disabled |
 | AC-36 | ✅ | `chips.test.js` + `signals.test.js` |
-| AC-37 | ✅/👁 | Chip order and count are tested (`copy.test.js`); the two-row wrap at 393pt is a CSS flex-wrap, checked by screenshot, not pixel-measured |
+| AC-37 | ✅/👁 | The general case is exactly six, in order (`copy.test.js`); the "skip the push" case is seven (a live addition, "Regular weight" — see `docs/DECISIONS.md`). Wrap at 393pt is a CSS flex-wrap, checked by screenshot, not pixel-measured |
 | AC-38, AC-39, AC-40 | ✅ | `chips.test.js`, `signals.test.js`, `pain.test.js` |
 | AC-41 | ✅ | `pain.test.js` — choosing the Pain/discomfort chip also reports pain (same button/card/propagation effects as tapping Pain directly) |
 | AC-42 | ✅ | `selectChip()` records to `rejectedRecommendations`; there is no "failed" state anywhere in the app |

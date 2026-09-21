@@ -3,7 +3,7 @@
 /** @typedef {import('../domain/types.js').SignalLabel} SignalLabel */
 
 import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
-import { CHIP_LABELS, COPY, displayLabel } from '../domain/copy.js';
+import { COPY, chipLabelsFor, displayLabel } from '../domain/copy.js';
 import { shouldShowChips, chipsHeadingKind } from '../domain/rules/chips.js';
 import { evaluate } from '../domain/rules/evaluate.js';
 import { allTimeMaxWorkingWeight, lastNLogs } from '../domain/rules/history.js';
@@ -142,10 +142,11 @@ function renderDockedCard() {
     } else {
       const heading =
         state.chips.headingKind === 'push_skipped' ? COPY.chipsHeadingPushSkipped : COPY.chipsHeadingOtherChange;
+      const chipLabels = chipLabelsFor(state.chips.headingKind);
       html += `
         <p class="chips__heading">${heading}</p>
         <div class="chips__list">
-          ${CHIP_LABELS.map((label) => `<button class="chip" type="button" data-chip="${label}">${label}</button>`).join('')}
+          ${chipLabels.map((label) => `<button class="chip" type="button" data-chip="${label}">${label}</button>`).join('')}
         </div>
       `;
     }
