@@ -1,0 +1,33 @@
+:root {
+  /* colour */
+  --bg: #000000;
+  --surface: #1c1c1d;
+  --raised: #2c2c2d;
+  --text: #ffffff;
+  --text-muted: #84888e;
+  --blue: #3d8af7;
+  --done-row: #1c2f0e;
+  --done-cell: #18290c;
+  --done-check: #71ba41;
+  /* layout, 1pt = 1px at 393 wide */
+  --margin: 16px;
+  --radius-card: 10px;
+  --radius-btn: 7px;
+  --radius-btn-lg: 9px;
+  --tap: 44px;
+  --stroke: 2px;
+  /* type */
+  --fs-title: 24px;
+  --fs-exercise: 18px;
+  --fs-body: 16px;
+  --fs-secondary: 15px;
+  --fs-label: 12px;
+  --fs-small: 11px;
+  --fs-timer: 28px;
+  /* motion */
+  --t-press: 100ms;
+  --t-card: 200ms;
+  --text-scale: 1;
+  /* font */
+  --font: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
