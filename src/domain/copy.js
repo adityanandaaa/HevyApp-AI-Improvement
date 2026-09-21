@@ -1,0 +1,72 @@
+// Fixed strings, character limits and copy templates (HANDOFF section 9).
+// Exact strings only — no wording invented here beyond the "my proposal"
+// items HANDOFF itself calls out (chipsHeadingOtherChange).
+
+export const LIMITS = {
+  homeHook: 45,
+  homeTeaser: 90,
+  workoutExpect: 200,
+  workoutTackle: 200,
+  directionReason: 220,
+  signalReason: 110,
+  recapStatus: 60,
+  recapNext: 150,
+  recapOverall: 100,
+  recapHeadlineWords: 3,
+};
+
+/** In order, per HANDOFF section 9. */
+export const CHIP_LABELS = [
+  'Too tired',
+  'Poor sleep',
+  "Didn't feel ready",
+  'Pain/discomfort',
+  'Changed my mind',
+  'Other',
+];
+
+export const COPY = {
+  startRoutine: 'Start Routine',
+  cardHeading: "TODAY'S FOCUS",
+  painReported: 'Pain reported. Hold or reduce the load here. Stopping is a valid choice.',
+  painCleared: 'Pain cleared',
+  chipsHeadingPushSkipped: 'Why did you skip the push?',
+  /** HANDOFF section 9: "my proposal". */
+  chipsHeadingOtherChange: 'Why did you change the weight?',
+
+  /**
+   * R10, primary overlap direction-line wording.
+   * @param {string} exerciseName
+   * @returns {string}
+   */
+  painPrimaryOverlap(exerciseName) {
+    return `You reported pain on ${exerciseName} earlier. Keep this one conservative and stop if it returns.`;
+  },
+
+  /**
+   * R10, secondary overlap direction-line wording.
+   * @param {string} muscle
+   * @returns {string}
+   */
+  painSecondaryOverlap(muscle) {
+    return `This also loads ${muscle}, so keep an eye on it.`;
+  },
+
+  /**
+   * R4, history-building direction line.
+   * @param {number} sessionCount
+   * @returns {string}
+   */
+  historyBuilding(sessionCount) {
+    return `History building: ${sessionCount} of 3 sessions`;
+  },
+
+  /**
+   * R11, chip selection confirmation.
+   * @param {string} reason
+   * @returns {string}
+   */
+  chipSaved(reason) {
+    return `Reason saved: ${reason}`;
+  },
+};

@@ -43,9 +43,23 @@ src/
       workout.css           Workout tab
       log-workout.css        Log Workout screen
     devtoolbar/            (added from M3, when scenarios exist to pick)
-  domain/                pure JS, no DOM, unit tested (added from M2)
-  reasoning/               scripted reasoning provider (added from M2)
-  data/                     mock data, all marked MOCK (added from M2)
+  domain/                pure JS, no DOM, unit tested
+    types.js               JSDoc typedefs (section 6 of HANDOFF.md)
+    copy.js                 fixed strings, limits, templates (section 9)
+    rules/
+      working-sets.js         R1
+      working-weight.js        R2, R3
+      history.js                 R4, R5 session selection
+      push-gate.js                 R5, R6
+      cross-exercise.js             R7
+      pain.js                        R10
+      evaluate.js                     the evaluate() entry point (R1-R10)
+      target.js                        next push-weight suggestion
+  reasoning/               scripted reasoning provider (added from M3)
+  data/
+    exercises.js            MOCK Push Day routine (section 8)
+    sessions.js              MOCK S-3/S-2/S-1 sessions (section 8)
+    scenarios.js               MOCK dev-toolbar scenarios (added from M3)
   state/                     store (added from M3)
 scripts/
   dev-server.js          zero-dependency static file server for local dev
@@ -102,6 +116,31 @@ M1 additions:
 - **Profile tab is visually present but inert** (out of scope, like Leg Day/
   Pull Day).
 
+M2 additions (also flagged inline as `// INTERPRETATION: see HANDOFF section 7`):
+
+- **Working weight and "successful session"** (R2, R3) are my technical
+  reading of the PRD, as HANDOFF itself flags: working weight is the highest
+  weight among a session's working sets, and a session is successful when
+  every set at that weight reaches at least the bottom of the target rep
+  range.
+- **"Last three sessions"** (R5) means the three most recent completed
+  sessions that include the exercise, regardless of gaps from other exercises
+  in between.
+- **The next push weight is current working weight + 2kg.** HANDOFF gives no
+  exact increment formula, only the worked example in section 9 (stable at
+  40kg → "try 42kg today?"); 2kg is read from that example
+  (`src/domain/rules/target.js`).
+- **History-building blocks PUSH with reason `'history'`** in `evaluate()`'s
+  `blocked` array, even though `allowed` is simply empty either way (AC-11:
+  "no signal is shown"). This uses the `'history'` `BlockReason` the type
+  already defines, rather than leaving it never exercised.
+- **Pain effect is always computed, independent of history-building.** For
+  an exercise still building history (e.g. Dips), `evaluate()` returns
+  `historyBuilding: true` and a fully-computed `painEffect` (e.g. `'block'`)
+  at the same time; HANDOFF's own golden test T7 requires this ("Dips
+  computes as block but its display stays history-building") and leaves the
+  display precedence to the UI, not the rules engine.
+
 ## Milestones
 
 Tracking `HANDOFF.md` section 11. Each milestone is reviewed before starting the
@@ -109,7 +148,7 @@ next.
 
 - [x] M0 — Scaffold
 - [x] M1 — Hevy shell
-- [ ] M2 — Rules engine
+- [x] M2 — Rules engine
 - [ ] M3 — Today's Focus and direction line
 - [ ] M4 — Signals
 - [ ] M5 — Pain
