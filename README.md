@@ -214,13 +214,14 @@ M4 additions:
   and section 10 groups it with the rest of the dev toolbar (text size,
   reduced motion, locale), which M7 built.
 - **Checking a set above the target celebrates it (PROGRESS/PR) instead of
-  only asking why the weight changed.** This revises a HANDOFF "do not
-  reopen" decision (section 3: chips show "every time" a weight differs) —
-  Aditya asked for it live, after the original behaviour felt like being
-  interrogated for doing well. The chips still appear every time per that
-  rule; a celebratory signal now appears above them when the weight is
-  higher than suggested. Full reasoning and the two declined alternatives
-  are in `docs/DECISIONS.md`.
+  asking why the weight changed — and the chips are suppressed entirely in
+  that case.** This revises a HANDOFF "do not reopen" decision (section 3:
+  chips show "every time" a weight differs) — Aditya asked for it live,
+  after the original behaviour felt like being interrogated for doing well.
+  The "every time" rule still holds for every other case (below target, or
+  at/above it without a PROGRESS/PR result); it just no longer applies
+  alongside a celebration. Full reasoning, including an interim version
+  that kept the chips and was then revised again, is in `docs/DECISIONS.md`.
 - **The BACK_OFF `set_checked` reason and the whole Why? sheet's BACK_OFF
   wording are my own composition.** HANDOFF's only scripted `set_checked`
   example (section 8, scenario 2) covers the RPE/HOLD case, reused verbatim;
@@ -374,7 +375,7 @@ needs Aditya, either on a real device or by eye.
 | AC-33 | ✅ | `store.test.js` (session-scoped state) — pain is never added to `rejectedRecommendations` |
 | AC-34 | ✅ | `pain.test.js` greps the Why? sheet for diagnostic/treatment language |
 | AC-35 | 👁 | By construction — KG/REPS/RPE are plain `<input>`s, never disabled |
-| AC-36 | ✅ | `chips.test.js` + `signals.test.js` |
+| AC-36 | ✅ | `chips.test.js` + `signals.test.js`. Revised live: chips are suppressed when the check also triggers a PROGRESS/PR celebration — see `docs/DECISIONS.md` |
 | AC-37 | ✅/👁 | The general case is exactly six, in order (`copy.test.js`); the "skip the push" case is seven (a live addition, "Regular weight" — see `docs/DECISIONS.md`). Wrap at 393pt is a CSS flex-wrap, checked by screenshot, not pixel-measured |
 | AC-38, AC-39, AC-40 | ✅ | `chips.test.js`, `signals.test.js`, `pain.test.js` |
 | AC-41 | ✅ | `pain.test.js` — choosing the Pain/discomfort chip also reports pain (same button/card/propagation effects as tapping Pain directly) |

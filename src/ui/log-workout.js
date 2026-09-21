@@ -291,7 +291,10 @@ function handleCheckToggle(checkButton) {
 
     try {
       const signal = computeSignal(exercise, checkedSet, setNumber);
-      const chips = computeChips(exercise, checkedSet, setNumber);
+      // Celebrating a push shouldn't be followed by "why did you change the
+      // weight?" — see docs/DECISIONS.md.
+      const isCelebration = signal?.label === 'PROGRESS' || signal?.label === 'PR';
+      const chips = isCelebration ? null : computeChips(exercise, checkedSet, setNumber);
 
       setSignal(signal ? { exerciseId: exercise.id, setNumber, ...signal } : null);
       setChips(chips ? { exerciseId: exercise.id, setNumber, savedReason: null, ...chips } : null);

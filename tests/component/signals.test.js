@@ -51,6 +51,20 @@ describe('signal card, chips, Why? sheet and rest timer (M4)', () => {
     expect(card.querySelectorAll('.chip').length).toBe(7);
   });
 
+  it('celebrates exceeding the target with PR/PROGRESS and no chips (docs/DECISIONS.md)', () => {
+    // Incline's target is 42kg; 44kg also exceeds the 40kg all-time max -> PR.
+    const checkBtn = setRowInputs(INCLINE, 3, { weight: '44', rpe: '7' });
+    checkBtn.click();
+    vi.advanceTimersByTime(1000);
+
+    const card = el('#docked-card');
+    expect(card.hidden).toBe(false);
+    expect(card.querySelector('.docked-card__signal strong')?.textContent).toBe('PR');
+    expect(card.querySelector('.docked-card__reason')?.textContent).toContain('44kg');
+    expect(card.querySelector('.chips__heading')).toBeNull();
+    expect(card.querySelectorAll('.chip').length).toBe(0);
+  });
+
   it('does not show chips for the ramp set (set 1, 30kg)', () => {
     const checkBtn = setRowInputs(INCLINE, 1); // 30kg, below the 40kg working weight
     checkBtn.click();

@@ -16,15 +16,21 @@ triggered the exact same chips and heading as checking one below it —
 something that's actually good news.
 
 **Decision (Aditya, live in the app):** when a checked set exceeds the
-target, show a celebratory signal first — PROGRESS ("Nice progress!") or PR
+target, show a celebratory signal — PROGRESS ("Nice progress!") or PR
 ("your heaviest yet on this lift") if the weight is a genuine all-time high
-for that exercise — with the reason chips still shown underneath in the same
-card. This keeps HANDOFF's "chips every time, up or down" rule intact (the
-chips still appear, and the heading logic is unchanged) while reframing the
-moment as positive rather than accusatory. Two other options were offered
-and declined: dropping the chips entirely on an overshoot, and just
-softening the "Why did you change the weight?" wording without adding a
-signal.
+for that exercise. Two other options were offered and declined: dropping the
+chips entirely on an overshoot with no replacement, and just softening the
+"Why did you change the weight?" wording without adding a signal.
+
+**Update, same session:** the first version of this also kept the reason
+chips underneath the celebration, to keep HANDOFF's "chips every time, up or
+down" rule technically intact. Aditya tried it and asked for the chips to be
+dropped entirely when celebrating — a card that says "PR! Great work!"
+immediately followed by "why did you change the weight?" still read as an
+unnecessary ask right after good news. Chips are now suppressed outright
+whenever the signal is PROGRESS or PR; the "every time" rule still holds for
+every other case (checking below target, or at/above it without a
+PROGRESS/PR-worthy result).
 
 **What this unlocks:** PROGRESS and PR were previously unreachable in the
 prototype — R12 only names HOLD and BACK_OFF as the default reactive policy,
