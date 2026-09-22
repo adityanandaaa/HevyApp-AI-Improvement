@@ -264,6 +264,14 @@
   color: var(--text-muted);
 }
 
+/* Chips-only case (no signal): the heading sits in the header row next to
+   Dismiss, rather than leaving that row empty above a heading of its own. */
+.docked-card__header .chips__heading {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .chips__list {
   display: flex;
   flex-wrap: wrap;

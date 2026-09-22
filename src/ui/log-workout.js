@@ -115,9 +115,21 @@ function renderDockedCard() {
     return;
   }
 
+  const chipsHeading =
+    state.chips && !state.chips.savedReason
+      ? state.chips.headingKind === 'push_skipped'
+        ? COPY.chipsHeadingPushSkipped
+        : COPY.chipsHeadingOtherChange
+      : null;
+  // Chips-only case (no signal): the heading doubles as the header's title
+  // instead of leaving the dismiss button floating next to empty space.
+  const headingInHeader = !state.signal && chipsHeading;
+
   const signalRow = state.signal
     ? `<p class="docked-card__signal">${signalIconMarkup(state.signal.label)}<strong>${displayLabel(state.signal.label)}</strong></p>`
-    : '<span></span>';
+    : headingInHeader
+      ? `<p class="chips__heading">${chipsHeading}</p>`
+      : '<span></span>';
 
   let html = `
     <div class="docked-card__header">
@@ -141,11 +153,9 @@ function renderDockedCard() {
     if (state.chips.savedReason) {
       html += `<p class="chips__saved">${COPY.chipSaved(state.chips.savedReason)}</p>`;
     } else {
-      const heading =
-        state.chips.headingKind === 'push_skipped' ? COPY.chipsHeadingPushSkipped : COPY.chipsHeadingOtherChange;
       const chipLabels = chipLabelsFor(state.chips.headingKind);
       html += `
-        <p class="chips__heading">${heading}</p>
+        ${headingInHeader ? '' : `<p class="chips__heading">${chipsHeading}</p>`}
         <div class="chips__list">
           ${chipLabels.map((label) => `<button class="chip" type="button" data-chip="${label}">${label}</button>`).join('')}
         </div>
