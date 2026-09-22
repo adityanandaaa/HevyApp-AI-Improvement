@@ -56,7 +56,10 @@ const handleRequest = async (req, res) => {
 
   const contentType = MIME_TYPES[extname(filePath)] ?? 'application/octet-stream';
   const body = await readFile(filePath);
-  res.writeHead(200, { 'Content-Type': contentType });
+  // No cache-control headers meant a plain reload could keep serving an old
+  // cached copy of a JS module across a dev-server restart — confusing for
+  // local dev, where the file on disk is the only source of truth.
+  res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'no-store' });
   res.end(body);
 };
 
