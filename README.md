@@ -202,17 +202,17 @@ M4 additions:
   gives no spec for a custom control beyond that icon. A text input matching
   the KG/REPS styling is simplest to build reliably and lets a reviewer
   change RPE by hand to trigger HOLD/BACK OFF while testing.
-- **No dev-toolbar scenario picker, and ADAPT is unreachable.**
+- **No dev-toolbar scenario picker.**
   Re-reading HANDOFF section 8's five scenarios closely: all but "Pain"
   (scenario 3, needs the Pain button, M5) are reachable by hand through the
   exact rules and mock data already built. Per R12, PR/ADAPT/PROGRESS start
   as "scripted in scenarios" with no scenario system built — PROGRESS and PR
   later got a real reactive rule instead (see below, and `docs/DECISIONS.md`),
-  so ADAPT is the only one still unreachable. Building the scenario picker
-  (a QA convenience that pre-checks sets to jump to an interesting moment,
-  not new rules) stays deferred — it doesn't block any acceptance criterion,
-  and section 10 groups it with the rest of the dev toolbar (text size,
-  reduced motion, locale), which M7 built.
+  and ADAPT was later dropped from scope entirely (also `docs/DECISIONS.md`).
+  Building the scenario picker (a QA convenience that pre-checks sets to jump
+  to an interesting moment, not new rules) stays deferred — it doesn't block
+  any acceptance criterion, and section 10 groups it with the rest of the dev
+  toolbar (text size, reduced motion, locale), which M7 built.
 - **Checking a set above the target celebrates it (PROGRESS/PR) instead of
   asking why the weight changed — and the chips are suppressed entirely in
   that case.** This revises a HANDOFF "do not reopen" decision (section 3:
@@ -222,6 +222,13 @@ M4 additions:
   at/above it without a PROGRESS/PR result); it just no longer applies
   alongside a celebration. Full reasoning, including an interim version
   that kept the chips and was then revised again, is in `docs/DECISIONS.md`.
+- **ADAPT was removed from `SignalLabel` entirely, live, after M7.**
+  HANDOFF section 3 confirms it as one of six signals, but it was always
+  unreachable in this prototype (no reactive trigger, no scenario system),
+  and Aditya decided it's out of MVP scope per the discovery doc's own MVP
+  Core Capability (Push/Hold/Back Off only). `SignalLabel` is now five
+  values; its icon (`icon-refresh`) and sprite symbol were removed as
+  dead code alongside it. Full reasoning in `docs/DECISIONS.md`.
 - **The BACK_OFF `set_checked` reason and the whole Why? sheet's BACK_OFF
   wording are my own composition.** HANDOFF's only scripted `set_checked`
   example (section 8, scenario 2) covers the RPE/HOLD case, reused verbatim;
@@ -293,8 +300,8 @@ M7 additions:
   itself remains a QA convenience the reviewer doesn't strictly need —
   every state HANDOFF's five scenarios describe is reachable by hand in
   Log Workout, as M4's note explains. (PR/ADAPT/PROGRESS were unreachable
-  at M7 time; PROGRESS/PR later got a real trigger — see `docs/DECISIONS.md`.
-  ADAPT is still scenario-only.)
+  at M7 time; PROGRESS/PR later got a real trigger, and ADAPT was later
+  dropped from scope entirely — see `docs/DECISIONS.md`.)
 - **`--blue-fill`, a measured-darker shade of `--blue`, backs every
   primary-button/pill fill (white label text).** Automated axe testing
   found that white text on `--blue` at 16px is 3.4:1 — HANDOFF's own
@@ -359,7 +366,7 @@ needs Aditya, either on a real device or by eye.
 | AC-8, AC-9 | ✅ | `todays-focus-render.test.js` + `scripted-signals.test.js` (length) |
 | AC-10 | 👁 | By construction — `render.js` only reads `evaluate()`/`computeTarget()`, never writes to a KG/REPS/RPE input |
 | AC-11 | ✅ | `todays-focus-render.test.js` — Dips shows the history-building line |
-| AC-12 | ⚠️ | 4 of 7 triggers are implemented: HOLD (RPE>=9), BACK_OFF (rep drop), and — added after live feedback, see `docs/DECISIONS.md` — PROGRESS/PR (exceeding the target/all-time max). ADAPT alone still needs a scenario system that isn't built |
+| AC-12 | ⚠️ | 4 of the original 7 triggers are implemented: HOLD (RPE>=9), BACK_OFF (rep drop), and — added after live feedback, see `docs/DECISIONS.md` — PROGRESS/PR (exceeding the target/all-time max). "Need to adapt" (ADAPT) was later dropped from scope entirely, also `docs/DECISIONS.md`, so it's no longer a gap; a reactive PUSH trigger and an accumulated-volume trigger remain unbuilt |
 | AC-13 | ✅ | `docked-card` CSS (flex-column, 40% max-height, docks above the rest bar) + axe scan |
 | AC-14 | ✅ | `signals.test.js` — appears after the signal delay, well under 1s; fades over `--t-card` (200ms) |
 | AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order |
@@ -369,7 +376,7 @@ needs Aditya, either on a real device or by eye.
 | AC-19 | ✅ | The checkbox toggle is synchronous; signal computation is wrapped in try/catch (nothing shown or thrown on failure) |
 | AC-20 | 👁 | Reactive signals are recomputed from live `todaysLogs()` on every check, so nothing is "permanent" — not covered by a dedicated regression test |
 | AC-21 to AC-24, AC-26 | ✅ | Golden tests T1-T10 (`evaluate.test.js`) |
-| AC-25 | ✅ | `evaluate()` throws for an exercise outside the routine; ADAPT has no editing action anywhere in the UI |
+| AC-25 | ✅ | `evaluate()` throws for an exercise outside the routine. ADAPT itself was later dropped from scope (`docs/DECISIONS.md`), so this AC's ADAPT clause is now moot rather than satisfied by a no-op |
 | AC-27, AC-28 | ✅ | `pain.test.js` |
 | AC-29 to AC-32 | ✅ | `pain.test.js` |
 | AC-33 | ✅ | `store.test.js` (session-scoped state) — pain is never added to `rejectedRecommendations` |
@@ -390,7 +397,7 @@ needs Aditya, either on a real device or by eye.
 | AC-54 | 👁 | Verified against the mockups at each milestone's screenshot review |
 | AC-55 | ✅ | axe `color-contrast` scan — fixed 3 real violations while building M7 (see Interpretations) |
 | AC-56 | ✅ | `accessibility.test.js` — 0 axe violations across 8 screen states (Home, Workout, Log Workout x2, Why? sheet, Pain, Recap, dev toolbar) |
-| AC-57 | ✅ | Every `SignalLabel` maps to a distinct icon (`signal-icons.js`); `displayLabel()` always renders text alongside it |
+| AC-57 | ✅ | Every `SignalLabel` maps to a distinct icon (`signal-icons.js`); `displayLabel()` always renders text alongside it. Now five signals, not six — ADAPT was dropped from scope (`docs/DECISIONS.md`) |
 | AC-58 | ✅/👁 | `behaviors.test.js` doesn't assert this directly, but a manual 200% screenshot check confirmed no horizontal overflow (`scrollWidth === clientWidth === 393`) and no clipped text; fixed one real wrapping-order issue found this way (Today's Focus signal badge) |
 | AC-59 | ✅ | `behaviors.test.js` — Start Routine, Pain, chips, Dismiss, Why? Close and recap Done all measure >=44pt. `.check-btn` is correctly excluded: it's Hevy's own existing control (~35-40pt, HANDOFF section 10), not a new element |
 | AC-60 | ✅ | Every action is a single tap; the Why? sheet has a Close button (its overlay is also click-to-close, though swipe-to-dismiss itself isn't implemented) |

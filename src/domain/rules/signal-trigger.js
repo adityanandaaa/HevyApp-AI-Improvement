@@ -5,8 +5,8 @@
 // R12: the prototype's default policy. HOLD and BACK_OFF are HANDOFF's own
 // two (section 7); PROGRESS and PR were added after Aditya tried pushing
 // past the suggested target and got asked "why did you change the weight?"
-// instead of being congratulated — see README "Interpretations". ADAPT is
-// still scripted-in-scenarios only (no reactive trigger fits it).
+// instead of being congratulated — see README "Interpretations". ADAPT was
+// dropped from scope entirely (not MVP) — see docs/DECISIONS.md.
 
 /** Confirmed by Aditya (also used by the push gate, R5/R6). */
 const HIGH_RPE_THRESHOLD = 9;

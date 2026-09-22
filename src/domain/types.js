@@ -4,7 +4,7 @@
 /**
  * @typedef {'warmup'|'normal'|'drop'|'failure'} SetType
  * @typedef {'chest'|'shoulders'|'triceps'|'biceps'|'back'|'quads'|'hamstrings'|'glutes'|'calves'|'core'} Muscle
- * @typedef {'PUSH'|'HOLD'|'BACK_OFF'|'PR'|'ADAPT'|'PROGRESS'} SignalLabel
+ * @typedef {'PUSH'|'HOLD'|'BACK_OFF'|'PR'|'PROGRESS'} SignalLabel
  * @typedef {'history'|'push_gate'|'high_rpe'|'cross_exercise'|'pain'} BlockReason
  */
 

@@ -70,3 +70,29 @@ covered by the PROGRESS/PR case above rather than chips at all).
 `PUSH_SKIPPED_CHIP_LABELS` (seven), selected by the new `chipLabelsFor()`
 helper; `src/ui/log-workout.js`'s docked-card renderer calls it instead of
 using `CHIP_LABELS` directly.
+
+## ADAPT dropped from scope — not MVP
+
+**Date:** 2026-09-22
+
+**What changed:** HANDOFF section 3 lists all six signals (PUSH, HOLD,
+BACK OFF, PR, ADAPT, PROGRESS) as confirmed, with an icon shape and a place
+in AC-15/AC-25/AC-57's accessibility requirements. ADAPT was always
+unreachable in this prototype — HANDOFF treats it as "scripted in
+scenarios," and no scenario system was ever built (see the M4/M7 notes in
+README) — but it still existed as a real value in the `SignalLabel` type,
+with its own icon.
+
+**Decision (Aditya):** remove ADAPT entirely. It's out of MVP scope per the
+discovery doc's own MVP Core Capability (section 36: Push/Hold/Back Off for
+exercises already in the routine) — unlike PROGRESS/PR above, this isn't a
+new capability being added, it's an unused one being cut. `SignalLabel` is
+now `'PUSH' | 'HOLD' | 'BACK_OFF' | 'PR' | 'PROGRESS'`, five values.
+
+**Implementation:** `src/domain/types.js` (`SignalLabel`), `src/ui/
+signal-icons.js` (`SIGNAL_ICON_IDS`, `icon-refresh` mapping removed),
+`index.html` (the now-unused `#icon-refresh` sprite symbol removed),
+`src/domain/rules/signal-trigger.js` (R12 comment updated). HANDOFF.md
+itself is left as-is (the original spec, not edited retroactively); this
+entry is the record of the deviation, along with README's Interpretations
+and Appendix A.
