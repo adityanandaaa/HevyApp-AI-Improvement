@@ -60,7 +60,10 @@ describe('signal card, chips, Why? sheet and rest timer (M4)', () => {
     const card = el('#docked-card');
     expect(card.hidden).toBe(false);
     expect(card.querySelector('.docked-card__signal strong')?.textContent).toBe('PR');
-    expect(card.querySelector('.docked-card__reason')?.textContent).toContain('44kg');
+    // Includes the total reps done in the set, not just the weight.
+    expect(card.querySelector('.docked-card__reason')?.textContent).toBe(
+      'Set 3 was 44kg × 10 — your heaviest yet on this lift. Great work!',
+    );
     expect(card.querySelector('.chips__heading')).toBeNull();
     expect(card.querySelectorAll('.chip').length).toBe(0);
   });
@@ -73,7 +76,9 @@ describe('signal card, chips, Why? sheet and rest timer (M4)', () => {
     const card = el('#docked-card');
     expect(card.hidden).toBe(false);
     expect(card.querySelector('.docked-card__signal strong')?.textContent).toBe('PR');
-    expect(card.querySelector('.docked-card__reason')?.textContent).toContain('44kg');
+    expect(card.querySelector('.docked-card__reason')?.textContent).toBe(
+      'Set 3 was 44kg × 10 — your heaviest yet on this lift. Great work!',
+    );
     const secondary = card.querySelector('.docked-card__reason--secondary');
     expect(secondary?.textContent).toContain('RPE 9');
     expect(secondary?.querySelector('use')?.getAttribute('href')).toBe('#icon-pause');

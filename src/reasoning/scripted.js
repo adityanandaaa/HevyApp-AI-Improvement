@@ -104,11 +104,12 @@ function repDropSetCheckedReason(setNumber, lastSet, locale) {
  * @returns {string}
  */
 function progressSetCheckedReason(setNumber, lastSet, target, locale, celebrationBasis) {
+  const weightAndReps = `${formatNumber(lastSet.weightKg, locale)}kg × ${formatNumber(lastSet.reps, locale)}`;
   if (celebrationBasis === 'reps') {
-    return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg × ${formatNumber(lastSet.reps, locale)} — your best rep count yet at this weight. Nice progress!`;
+    return `Set ${setNumber} was ${weightAndReps} — your best rep count yet at this weight. Nice progress!`;
   }
   const targetText = target ? `, past the ${formatNumber(target.weightKg, locale)}kg target` : '';
-  return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg${targetText}. Nice progress!`;
+  return `Set ${setNumber} was ${weightAndReps}${targetText}. Nice progress!`;
 }
 
 /**
@@ -119,7 +120,7 @@ function progressSetCheckedReason(setNumber, lastSet, target, locale, celebratio
  * @returns {string}
  */
 function prSetCheckedReason(setNumber, lastSet, locale) {
-  return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg — your heaviest yet on this lift. Great work!`;
+  return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg × ${formatNumber(lastSet.reps, locale)} — your heaviest yet on this lift. Great work!`;
 }
 
 /**

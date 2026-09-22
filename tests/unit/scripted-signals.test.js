@@ -69,6 +69,23 @@ describe('set_checked reason text (HANDOFF section 8, scenario 2)', () => {
     expect(reason).toBe('Set 3 was 40kg × 11 — your best rep count yet at this weight. Nice progress!');
     expect(reason.length).toBeLessThanOrEqual(LIMITS.signalReason);
   });
+
+  it('a weight-based PROGRESS also states the total reps done in the set', () => {
+    const lastSet = normalSet(43, 8, 7);
+    const reason = explain(
+      { trigger: 'set_checked', exercise: incline, evaluation, lastSet, target, setNumber: 3, celebrationBasis: 'weight' },
+      'PROGRESS',
+    );
+    expect(reason).toBe('Set 3 was 43kg × 8, past the 42kg target. Nice progress!');
+    expect(reason.length).toBeLessThanOrEqual(LIMITS.signalReason);
+  });
+
+  it('a PR also states the total reps done in the set', () => {
+    const lastSet = normalSet(44, 8, 7);
+    const reason = explain({ trigger: 'set_checked', exercise: incline, evaluation, lastSet, target, setNumber: 3 }, 'PR');
+    expect(reason).toBe('Set 3 was 44kg × 8 — your heaviest yet on this lift. Great work!');
+    expect(reason.length).toBeLessThanOrEqual(LIMITS.signalReason);
+  });
 });
 
 describe('AC-68: set_checked reason text respects the locale', () => {
