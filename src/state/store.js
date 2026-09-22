@@ -21,6 +21,10 @@ import { DEFAULT_LOCALE } from '../domain/copy.js';
  * @property {SignalLabel} label
  * @property {string} reason
  * @property {boolean} [isPain] true when this card came from the Pain button, not a rule trigger
+ * @property {SignalLabel} [secondaryLabel] a second signal shown below the
+ *   primary — currently only a HOLD caution alongside a high-RPE PROGRESS/PR
+ *   (docs/DECISIONS.md)
+ * @property {string} [secondaryReason]
  */
 
 /**

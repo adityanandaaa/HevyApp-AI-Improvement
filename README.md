@@ -222,6 +222,14 @@ M4 additions:
   at/above it without a PROGRESS/PR result); it just no longer applies
   alongside a celebration. Full reasoning, including an interim version
   that kept the chips and was then revised again, is in `docs/DECISIONS.md`.
+- **A high-RPE PR/PROGRESS shows both signals, celebration first, instead
+  of losing the celebration to the RPE check.** `reactiveSignal()` used to
+  check RPE before the target-exceeded check, so a genuinely heavy PR at
+  RPE 9+ returned HOLD only — no celebration, and chips reappeared since
+  the card no longer counted as one. Found live on Incline Bench Press
+  (Dumbbell). The card now leads with PR/PROGRESS and shows a second,
+  visually distinct HOLD-caution block below it; chips stay suppressed.
+  Full reasoning in `docs/DECISIONS.md`.
 - **ADAPT was removed from `SignalLabel` entirely, live, after M7.**
   HANDOFF section 3 confirms it as one of six signals, but it was always
   unreachable in this prototype (no reactive trigger, no scenario system),
@@ -369,7 +377,7 @@ needs Aditya, either on a real device or by eye.
 | AC-12 | ⚠️ | 4 of the original 7 triggers are implemented: HOLD (RPE>=9), BACK_OFF (rep drop), and — added after live feedback, see `docs/DECISIONS.md` — PROGRESS/PR (exceeding the target/all-time max). "Need to adapt" (ADAPT) was later dropped from scope entirely, also `docs/DECISIONS.md`, so it's no longer a gap; a reactive PUSH trigger and an accumulated-volume trigger remain unbuilt |
 | AC-13 | ✅ | `docked-card` CSS (flex-column, 40% max-height, docks above the rest bar) + axe scan |
 | AC-14 | ✅ | `signals.test.js` — appears after the signal delay, well under 1s; fades over `--t-card` (200ms) |
-| AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order |
+| AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order. A high-RPE PR/PROGRESS adds one extra reason block for the HOLD caution (`docs/DECISIONS.md`); order and the single label+icon in the header are otherwise unchanged |
 | AC-16 | ✅ | `signals.test.js` — dismiss, next-check, and rest-timer-zero all tested |
 | AC-17 | ✅ | Single `state.signal`, replaced not stacked; Dismiss never touches `rejectedRecommendations` |
 | AC-18 | ✅ | `behaviors.test.js` (focus trap, Close) + `signals.test.js` (four blocks, in order) |

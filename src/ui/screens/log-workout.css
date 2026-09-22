@@ -253,6 +253,23 @@
   font-size: calc(var(--fs-secondary) * var(--text-scale));
 }
 
+/* A high-RPE PROGRESS/PR set: the celebration reason above stays the primary
+   text, this is a visually distinct caution below it (docs/DECISIONS.md). */
+.docked-card__reason--secondary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-btn-lg);
+  background: var(--raised);
+}
+
+.docked-card__reason--secondary .icon {
+  margin-top: 1px;
+  color: var(--text-muted);
+}
+
 .docked-card__why {
   margin-top: 8px;
   padding: 0;

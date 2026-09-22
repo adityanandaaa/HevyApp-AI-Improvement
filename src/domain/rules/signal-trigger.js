@@ -22,25 +22,37 @@ const REP_DROP_THRESHOLD = 2;
  */
 
 /**
+ * @typedef {object} ReactiveSignal
+ * @property {SignalLabel} label the primary signal — what the card leads with
+ * @property {SignalLabel} [secondary] a second signal to also convey below
+ *   the primary. Currently only ever 'HOLD', for a PROGRESS/PR set that was
+ *   also high-RPE (docs/DECISIONS.md): the celebration still leads, but the
+ *   card also says the effort was high rather than dropping that entirely.
+ */
+
+/**
  * @param {SetEntry} checkedSet the set just checked
  * @param {SetEntry[]} priorSetsToday this exercise's working sets logged
  *   earlier today, in order, NOT including the one just checked
  * @param {ReactiveSignalContext} context
- * @returns {SignalLabel | null}
+ * @returns {ReactiveSignal | null}
  */
 export function reactiveSignal(checkedSet, priorSetsToday, context) {
-  if (checkedSet.rpe >= HIGH_RPE_THRESHOLD) {
-    return 'HOLD';
-  }
+  const isHighRpe = checkedSet.rpe >= HIGH_RPE_THRESHOLD;
 
   if (context.target && checkedSet.weightKg > context.target.weightKg) {
     const isAllTimeHeaviest = context.allTimeMaxWeightKg !== null && checkedSet.weightKg > context.allTimeMaxWeightKg;
-    return isAllTimeHeaviest ? 'PR' : 'PROGRESS';
+    const label = isAllTimeHeaviest ? 'PR' : 'PROGRESS';
+    return isHighRpe ? { label, secondary: 'HOLD' } : { label };
+  }
+
+  if (isHighRpe) {
+    return { label: 'HOLD' };
   }
 
   const previousAtSameWeight = [...priorSetsToday].reverse().find((set) => set.weightKg === checkedSet.weightKg);
   if (previousAtSameWeight && previousAtSameWeight.reps - checkedSet.reps >= REP_DROP_THRESHOLD) {
-    return 'BACK_OFF';
+    return { label: 'BACK_OFF' };
   }
 
   return null;

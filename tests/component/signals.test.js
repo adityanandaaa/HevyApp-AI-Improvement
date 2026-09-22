@@ -65,6 +65,23 @@ describe('signal card, chips, Why? sheet and rest timer (M4)', () => {
     expect(card.querySelectorAll('.chip').length).toBe(0);
   });
 
+  it('regression: a high-RPE PR still celebrates, with a HOLD caution as a second block (docs/DECISIONS.md)', () => {
+    const checkBtn = setRowInputs(INCLINE, 3, { weight: '44', rpe: '9' });
+    checkBtn.click();
+    vi.advanceTimersByTime(1000);
+
+    const card = el('#docked-card');
+    expect(card.hidden).toBe(false);
+    expect(card.querySelector('.docked-card__signal strong')?.textContent).toBe('PR');
+    expect(card.querySelector('.docked-card__reason')?.textContent).toContain('44kg');
+    const secondary = card.querySelector('.docked-card__reason--secondary');
+    expect(secondary?.textContent).toContain('RPE 9');
+    expect(secondary?.querySelector('use')?.getAttribute('href')).toBe('#icon-pause');
+    // Still a celebration at heart — chips stay suppressed.
+    expect(card.querySelector('.chips__heading')).toBeNull();
+    expect(card.querySelectorAll('.chip').length).toBe(0);
+  });
+
   it('does not show chips for the ramp set (set 1, 30kg)', () => {
     const checkBtn = setRowInputs(INCLINE, 1); // 30kg, below the 40kg working weight
     checkBtn.click();

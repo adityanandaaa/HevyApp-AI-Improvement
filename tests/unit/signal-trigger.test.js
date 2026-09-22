@@ -23,8 +23,8 @@ function targetContext(weightKg) {
 
 describe('R12: reactive signal triggers', () => {
   it('returns HOLD when the checked set is RPE 9 or higher', () => {
-    expect(reactiveSignal(set({ rpe: 9 }), [], NO_CONTEXT)).toBe('HOLD');
-    expect(reactiveSignal(set({ rpe: 9.5 }), [], NO_CONTEXT)).toBe('HOLD');
+    expect(reactiveSignal(set({ rpe: 9 }), [], NO_CONTEXT)).toEqual({ label: 'HOLD' });
+    expect(reactiveSignal(set({ rpe: 9.5 }), [], NO_CONTEXT)).toEqual({ label: 'HOLD' });
   });
 
   it('returns null for RPE 8 or lower with no rep drop and no target', () => {
@@ -33,7 +33,7 @@ describe('R12: reactive signal triggers', () => {
 
   it('returns BACK_OFF when reps drop by 2 or more from the previous set at the same weight', () => {
     const prior = [set({ weightKg: 40, reps: 10, rpe: 7 })];
-    expect(reactiveSignal(set({ weightKg: 40, reps: 8, rpe: 7 }), prior, NO_CONTEXT)).toBe('BACK_OFF');
+    expect(reactiveSignal(set({ weightKg: 40, reps: 8, rpe: 7 }), prior, NO_CONTEXT)).toEqual({ label: 'BACK_OFF' });
   });
 
   it('does not trigger BACK_OFF for a 1-rep drop', () => {
@@ -48,7 +48,7 @@ describe('R12: reactive signal triggers', () => {
 
   it('prefers HOLD over BACK_OFF when both conditions are met', () => {
     const prior = [set({ weightKg: 40, reps: 10, rpe: 7 })];
-    expect(reactiveSignal(set({ weightKg: 40, reps: 7, rpe: 9 }), prior, NO_CONTEXT)).toBe('HOLD');
+    expect(reactiveSignal(set({ weightKg: 40, reps: 7, rpe: 9 }), prior, NO_CONTEXT)).toEqual({ label: 'HOLD' });
   });
 
   it('uses the most recent prior set at that weight, not the first', () => {
@@ -61,17 +61,17 @@ describe('R12: reactive signal triggers', () => {
 describe('R12: PROGRESS and PR (exceeding the target should celebrate, not interrogate)', () => {
   it('returns PROGRESS when the checked weight exceeds the target but not the all-time max', () => {
     const context = { target: { weightKg: 42, currentWeightKg: 40, repsMin: 8, repsMax: 10 }, allTimeMaxWeightKg: 44 };
-    expect(reactiveSignal(set({ weightKg: 43, rpe: 7 }), [], context)).toBe('PROGRESS');
+    expect(reactiveSignal(set({ weightKg: 43, rpe: 7 }), [], context)).toEqual({ label: 'PROGRESS' });
   });
 
   it('returns PR when the checked weight exceeds both the target and the all-time max', () => {
     const context = { target: { weightKg: 42, currentWeightKg: 40, repsMin: 8, repsMax: 10 }, allTimeMaxWeightKg: 42 };
-    expect(reactiveSignal(set({ weightKg: 44, rpe: 7 }), [], context)).toBe('PR');
+    expect(reactiveSignal(set({ weightKg: 44, rpe: 7 }), [], context)).toEqual({ label: 'PR' });
   });
 
   it('returns PROGRESS when there is no recorded all-time max yet', () => {
     const context = { target: { weightKg: 42, currentWeightKg: 40, repsMin: 8, repsMax: 10 }, allTimeMaxWeightKg: null };
-    expect(reactiveSignal(set({ weightKg: 43, rpe: 7 }), [], context)).toBe('PROGRESS');
+    expect(reactiveSignal(set({ weightKg: 43, rpe: 7 }), [], context)).toEqual({ label: 'PROGRESS' });
   });
 
   it('does not trigger for a weight at or below the target', () => {
@@ -79,8 +79,15 @@ describe('R12: PROGRESS and PR (exceeding the target should celebrate, not inter
     expect(reactiveSignal(set({ weightKg: 40, rpe: 7 }), [], targetContext(42))).toBeNull();
   });
 
-  it('HOLD (high RPE) still takes priority over PROGRESS/PR', () => {
+  it('regression: a high-RPE PR/PROGRESS keeps the celebration as primary, with HOLD as a secondary caution', () => {
+    // Revises the earlier "HOLD takes priority" behaviour — a genuine PR
+    // shouldn't lose its celebration just because effort was also high.
+    // See docs/DECISIONS.md.
     const context = { target: { weightKg: 42, currentWeightKg: 40, repsMin: 8, repsMax: 10 }, allTimeMaxWeightKg: 42 };
-    expect(reactiveSignal(set({ weightKg: 44, rpe: 9 }), [], context)).toBe('HOLD');
+    expect(reactiveSignal(set({ weightKg: 44, rpe: 9 }), [], context)).toEqual({ label: 'PR', secondary: 'HOLD' });
+  });
+
+  it('a high-RPE set with no target exceeded is still plain HOLD, no secondary', () => {
+    expect(reactiveSignal(set({ rpe: 9 }), [], targetContext(42))).toEqual({ label: 'HOLD' });
   });
 });

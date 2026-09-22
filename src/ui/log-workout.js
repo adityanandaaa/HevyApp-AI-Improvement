@@ -141,8 +141,16 @@ function renderDockedCard() {
   `;
 
   if (state.signal) {
+    html += `<p class="docked-card__reason">${state.signal.reason}</p>`;
+    if (state.signal.secondaryLabel) {
+      html += `
+        <p class="docked-card__reason docked-card__reason--secondary">
+          ${signalIconMarkup(state.signal.secondaryLabel)}
+          <span>${state.signal.secondaryReason}</span>
+        </p>
+      `;
+    }
     html += `
-      <p class="docked-card__reason">${state.signal.reason}</p>
       <button class="link docked-card__why" type="button" id="docked-card-why">
         <svg class="icon icon--sm"><use href="#icon-info" /></svg> Why?
       </button>
@@ -206,7 +214,7 @@ function hideDockedCard() {
  * @param {Exercise} exercise
  * @param {SetEntry} checkedSet
  * @param {number} setNumber
- * @returns {{ label: SignalLabel; reason: string } | null}
+ * @returns {{ label: SignalLabel; reason: string; secondaryLabel?: SignalLabel; secondaryReason?: string } | null}
  */
 function computeSignal(exercise, checkedSet, setNumber) {
   const priorSets = setsLoggedBefore(exercise.id, setNumber);
@@ -216,14 +224,31 @@ function computeSignal(exercise, checkedSet, setNumber) {
   const allTimeMaxWeightKg = allTimeMaxWorkingWeight(evaluateInput.sessions, exercise.id);
 
   const candidate = reactiveSignal(checkedSet, priorSets, { target, allTimeMaxWeightKg });
-  const label = enforceGuardrails(evaluation, candidate);
+  if (!candidate) return null;
+
+  const label = enforceGuardrails(evaluation, candidate.label);
   if (!label) return null;
 
-  const reason = explain(
-    { trigger: 'set_checked', exercise, evaluation, lastSet: checkedSet, target, setNumber, locale: state.locale },
-    label,
-  );
-  return { label, reason };
+  /** @type {import('../reasoning/provider.js').ReasoningInput} */
+  const explainInput = {
+    trigger: 'set_checked',
+    exercise,
+    evaluation,
+    lastSet: checkedSet,
+    target,
+    setNumber,
+    locale: state.locale,
+  };
+  const reason = explain(explainInput, label);
+
+  // A PROGRESS/PR set that was also high-RPE keeps the celebration as the
+  // primary signal but also surfaces the HOLD caution below it, instead of
+  // losing the celebration to the RPE check entirely (docs/DECISIONS.md).
+  const secondaryLabel = candidate.secondary ? enforceGuardrails(evaluation, candidate.secondary) : null;
+  if (!secondaryLabel) return { label, reason };
+
+  const secondaryReason = explain(explainInput, secondaryLabel);
+  return { label, reason, secondaryLabel, secondaryReason };
 }
 
 /**
@@ -311,7 +336,12 @@ function handleCheckToggle(checkButton) {
       setChips(chips ? { exerciseId: exercise.id, setNumber, savedReason: null, ...chips } : null);
       renderDockedCard();
 
-      if (signal) announceLive(`${displayLabel(signal.label)}. ${signal.reason}`);
+      if (signal) {
+        const secondary = signal.secondaryLabel
+          ? ` ${displayLabel(signal.secondaryLabel)}. ${signal.secondaryReason}`
+          : '';
+        announceLive(`${displayLabel(signal.label)}. ${signal.reason}${secondary}`);
+      }
     } catch {
       // AC-19: if a signal is late or fails, nothing is shown and no error appears.
     }

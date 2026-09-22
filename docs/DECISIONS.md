@@ -96,3 +96,35 @@ signal-icons.js` (`SIGNAL_ICON_IDS`, `icon-refresh` mapping removed),
 itself is left as-is (the original spec, not edited retroactively); this
 entry is the record of the deviation, along with README's Interpretations
 and Appendix A.
+
+## A high-RPE PR/PROGRESS shows both, celebration first
+
+**Date:** 2026-09-22 (same session, after live testing on Incline Bench Press)
+
+**What changed:** `reactiveSignal()`'s original ordering (see the first
+entry above) checked RPE before the target-exceeded check, so a set that
+was both a genuine PR *and* RPE 9+ returned HOLD only — the celebration was
+silently lost, and since the card was no longer a celebration, the "why did
+you change the weight?" chips appeared too. Aditya noticed this on Incline
+Bench Press (Dumbbell): a heavy, high-effort PR produced an interrogation
+card with no acknowledgment of the PR at all.
+
+**Decision (Aditya, asked via three options — keep HOLD as-is, celebrate
+with the effort folded into the wording, or show both with the celebration
+first):** show both. The card leads with PR/PROGRESS (icon, label, and the
+usual celebration reason), and a second, visually distinct block below it
+carries the HOLD caution ("Set 3 was RPE 9. Stay at 44kg, no need to add a
+set today."). Chips stay suppressed — it's still fundamentally a
+celebration, per the first decision above.
+
+**Implementation:** `src/domain/rules/signal-trigger.js` — `reactiveSignal()`
+now returns `{ label, secondary? }` instead of a bare label; the
+target-exceeded check runs before the RPE check, and a high-RPE PR/PROGRESS
+attaches `secondary: 'HOLD'` instead of replacing the label outright. A
+plain high-RPE set with no target exceeded is unaffected (`{ label: 'HOLD' }`,
+no secondary). `src/ui/log-workout.js` (`computeSignal()` resolves the
+secondary label through `enforceGuardrails()` too, and composes its reason
+the same way as the primary; `renderDockedCard()` renders it as a second
+`.docked-card__reason` block with its own icon; the live-region announcement
+includes both). `src/state/store.js` (`SignalState` gained optional
+`secondaryLabel`/`secondaryReason`).
