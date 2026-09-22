@@ -230,6 +230,15 @@ M4 additions:
   (Dumbbell). The card now leads with PR/PROGRESS and shows a second,
   visually distinct HOLD-caution block below it; chips stay suppressed.
   Full reasoning in `docs/DECISIONS.md`.
+- **More reps at the same weight also celebrates, not just a weight
+  increase.** PROGRESS/PR originally only compared weight; two sets at the
+  same weight but very different rep counts read identically. There's now
+  an all-time max reps *per weight* (`allTimeMaxRepsAtWeight`, the reps
+  equivalent of the existing all-time max weight) — beating the best-ever
+  rep count at an existing weight triggers PROGRESS, even when the weight
+  itself stays under today's target. It can never be a PR by itself (a
+  weight only has rep history once logged before, so it's already `<=` the
+  all-time max weight). Full reasoning in `docs/DECISIONS.md`.
 - **ADAPT was removed from `SignalLabel` entirely, live, after M7.**
   HANDOFF section 3 confirms it as one of six signals, but it was always
   unreachable in this prototype (no reactive trigger, no scenario system),
@@ -377,7 +386,7 @@ needs Aditya, either on a real device or by eye.
 | AC-12 | ⚠️ | 4 of the original 7 triggers are implemented: HOLD (RPE>=9), BACK_OFF (rep drop), and — added after live feedback, see `docs/DECISIONS.md` — PROGRESS/PR (exceeding the target/all-time max). "Need to adapt" (ADAPT) was later dropped from scope entirely, also `docs/DECISIONS.md`, so it's no longer a gap; a reactive PUSH trigger and an accumulated-volume trigger remain unbuilt |
 | AC-13 | ✅ | `docked-card` CSS (flex-column, 40% max-height, docks above the rest bar) + axe scan |
 | AC-14 | ✅ | `signals.test.js` — appears after the signal delay, well under 1s; fades over `--t-card` (200ms) |
-| AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order. A high-RPE PR/PROGRESS adds one extra reason block for the HOLD caution (`docs/DECISIONS.md`); order and the single label+icon in the header are otherwise unchanged |
+| AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order. A high-RPE PR/PROGRESS adds one extra reason block for the HOLD caution, and a rep-record PROGRESS uses different wording than a weight-based one (`docs/DECISIONS.md`); order and the single label+icon in the header are otherwise unchanged |
 | AC-16 | ✅ | `signals.test.js` — dismiss, next-check, and rest-timer-zero all tested |
 | AC-17 | ✅ | Single `state.signal`, replaced not stacked; Dismiss never touches `rejectedRecommendations` |
 | AC-18 | ✅ | `behaviors.test.js` (focus trap, Close) + `signals.test.js` (four blocks, in order) |

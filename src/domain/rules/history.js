@@ -2,6 +2,7 @@
 /** @typedef {import('../types.js').ExerciseLog} ExerciseLog */
 
 import { workingWeight } from './working-weight.js';
+import { workingSets } from './working-sets.js';
 
 // INTERPRETATION: see HANDOFF section 7 (R4, R5). "Last three sessions" means
 // the three most recent completed sessions that include the exercise.
@@ -56,4 +57,23 @@ export function allTimeMaxWorkingWeight(sessions, exerciseId) {
     .filter((weight) => weight !== null);
   if (weights.length === 0) return null;
   return Math.max(...weights);
+}
+
+/**
+ * The most reps ever logged at one specific weight for this exercise,
+ * across every completed session — lets a rep record at an existing weight
+ * count as progress too, not just a weight increase (docs/DECISIONS.md:
+ * "more reps at the same weight also celebrates").
+ * @param {Session[]} sessions
+ * @param {string} exerciseId
+ * @param {number} weightKg
+ * @returns {number | null}
+ */
+export function allTimeMaxRepsAtWeight(sessions, exerciseId, weightKg) {
+  const reps = logsForExercise(sessions, exerciseId)
+    .flatMap((log) => workingSets(log))
+    .filter((set) => set.weightKg === weightKg)
+    .map((set) => set.reps);
+  if (reps.length === 0) return null;
+  return Math.max(...reps);
 }

@@ -6,7 +6,7 @@ import { PUSH_DAY_EXERCISES } from '../data/exercises.js';
 import { COPY, chipLabelsFor, displayLabel } from '../domain/copy.js';
 import { shouldShowChips, chipsHeadingKind } from '../domain/rules/chips.js';
 import { evaluate } from '../domain/rules/evaluate.js';
-import { allTimeMaxWorkingWeight, lastNLogs } from '../domain/rules/history.js';
+import { allTimeMaxRepsAtWeight, allTimeMaxWorkingWeight, lastNLogs } from '../domain/rules/history.js';
 import { reactiveSignal } from '../domain/rules/signal-trigger.js';
 import { computeTarget } from '../domain/rules/target.js';
 import { workingWeight } from '../domain/rules/working-weight.js';
@@ -214,7 +214,7 @@ function hideDockedCard() {
  * @param {Exercise} exercise
  * @param {SetEntry} checkedSet
  * @param {number} setNumber
- * @returns {{ label: SignalLabel; reason: string; secondaryLabel?: SignalLabel; secondaryReason?: string } | null}
+ * @returns {{ label: SignalLabel; reason: string; secondaryLabel?: SignalLabel; secondaryReason?: string; celebrationBasis?: 'weight' | 'reps' } | null}
  */
 function computeSignal(exercise, checkedSet, setNumber) {
   const priorSets = setsLoggedBefore(exercise.id, setNumber);
@@ -222,8 +222,13 @@ function computeSignal(exercise, checkedSet, setNumber) {
   const evaluation = evaluate(evaluateInput, exercise.id);
   const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
   const allTimeMaxWeightKg = allTimeMaxWorkingWeight(evaluateInput.sessions, exercise.id);
+  const maxRepsAtCheckedWeight = allTimeMaxRepsAtWeight(evaluateInput.sessions, exercise.id, checkedSet.weightKg);
 
-  const candidate = reactiveSignal(checkedSet, priorSets, { target, allTimeMaxWeightKg });
+  const candidate = reactiveSignal(checkedSet, priorSets, {
+    target,
+    allTimeMaxWeightKg,
+    allTimeMaxRepsAtWeight: maxRepsAtCheckedWeight,
+  });
   if (!candidate) return null;
 
   const label = enforceGuardrails(evaluation, candidate.label);
@@ -238,17 +243,19 @@ function computeSignal(exercise, checkedSet, setNumber) {
     target,
     setNumber,
     locale: state.locale,
+    celebrationBasis: candidate.celebrationBasis,
   };
   const reason = explain(explainInput, label);
+  const celebrationBasis = label === candidate.label ? candidate.celebrationBasis : undefined;
 
   // A PROGRESS/PR set that was also high-RPE keeps the celebration as the
   // primary signal but also surfaces the HOLD caution below it, instead of
   // losing the celebration to the RPE check entirely (docs/DECISIONS.md).
   const secondaryLabel = candidate.secondary ? enforceGuardrails(evaluation, candidate.secondary) : null;
-  if (!secondaryLabel) return { label, reason };
+  if (!secondaryLabel) return { label, reason, celebrationBasis };
 
   const secondaryReason = explain(explainInput, secondaryLabel);
-  return { label, reason, secondaryLabel, secondaryReason };
+  return { label, reason, secondaryLabel, secondaryReason, celebrationBasis };
 }
 
 /**
@@ -424,7 +431,7 @@ function openWhySheet() {
     const target = computeTarget(exercise, evaluateInput.sessions, evaluation);
     const setsToday = setsLoggedTodayWithNumbers(exercise.id);
     copy = composeWhySheet(
-      { trigger: 'set_checked', exercise, evaluation, target, locale: state.locale },
+      { trigger: 'set_checked', exercise, evaluation, target, locale: state.locale, celebrationBasis: state.signal.celebrationBasis },
       state.signal.label,
       setsToday,
     );

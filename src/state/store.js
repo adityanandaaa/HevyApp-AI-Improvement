@@ -25,6 +25,8 @@ import { DEFAULT_LOCALE } from '../domain/copy.js';
  *   primary — currently only a HOLD caution alongside a high-RPE PROGRESS/PR
  *   (docs/DECISIONS.md)
  * @property {string} [secondaryReason]
+ * @property {'weight' | 'reps'} [celebrationBasis] only set for a
+ *   PROGRESS/PR label — see domain/types.js `ReasoningInput`
  */
 
 /**

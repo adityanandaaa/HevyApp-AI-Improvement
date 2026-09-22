@@ -82,6 +82,23 @@ describe('signal card, chips, Why? sheet and rest timer (M4)', () => {
     expect(card.querySelectorAll('.chip').length).toBe(0);
   });
 
+  it('regression: more reps at the same weight also celebrates, even below the target weight (docs/DECISIONS.md)', () => {
+    // Incline's history never exceeds 12 reps at 40kg; target is 42kg, so
+    // this set stays under target but sets a new rep record at 40kg.
+    const checkBtn = setRowInputs(INCLINE, 3, { weight: '40', reps: '13', rpe: '7' });
+    checkBtn.click();
+    vi.advanceTimersByTime(1000);
+
+    const card = el('#docked-card');
+    expect(card.hidden).toBe(false);
+    expect(card.querySelector('.docked-card__signal strong')?.textContent).toBe('PROGRESS');
+    expect(card.querySelector('.docked-card__reason')?.textContent).toBe(
+      'Set 3 was 40kg × 13 — your best rep count yet at this weight. Nice progress!',
+    );
+    expect(card.querySelector('.chips__heading')).toBeNull();
+    expect(card.querySelectorAll('.chip').length).toBe(0);
+  });
+
   it('does not show chips for the ramp set (set 1, 30kg)', () => {
     const checkBtn = setRowInputs(INCLINE, 1); // 30kg, below the 40kg working weight
     checkBtn.click();

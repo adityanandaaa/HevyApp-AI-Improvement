@@ -92,14 +92,21 @@ function repDropSetCheckedReason(setNumber, lastSet, locale) {
 /**
  * INTERPRETATION: see HANDOFF section 7 (R12) and README "Interpretations" —
  * added so exceeding the suggested target is celebrated, not treated like an
- * unexplained change.
+ * unexplained change. `celebrationBasis: 'reps'` is a later addition
+ * (docs/DECISIONS.md): more reps at an existing weight celebrates too, not
+ * only a weight increase, and needs its own wording since the weight itself
+ * didn't necessarily pass the target.
  * @param {number} setNumber
  * @param {import('../domain/types.js').SetEntry} lastSet
  * @param {Target | null} target
  * @param {import('../domain/copy.js').Locale} locale
+ * @param {'weight' | 'reps'} [celebrationBasis]
  * @returns {string}
  */
-function progressSetCheckedReason(setNumber, lastSet, target, locale) {
+function progressSetCheckedReason(setNumber, lastSet, target, locale, celebrationBasis) {
+  if (celebrationBasis === 'reps') {
+    return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg × ${formatNumber(lastSet.reps, locale)} — your best rep count yet at this weight. Nice progress!`;
+  }
   const targetText = target ? `, past the ${formatNumber(target.weightKg, locale)}kg target` : '';
   return `Set ${setNumber} was ${formatNumber(lastSet.weightKg, locale)}kg${targetText}. Nice progress!`;
 }
@@ -121,7 +128,7 @@ function prSetCheckedReason(setNumber, lastSet, locale) {
  * @returns {string}
  */
 export function explain(input, label) {
-  const { evaluation, exercise, target, lastSet, setNumber, locale = DEFAULT_LOCALE } = input;
+  const { evaluation, exercise, target, lastSet, setNumber, locale = DEFAULT_LOCALE, celebrationBasis } = input;
 
   if (evaluation.historyBuilding) {
     return COPY.historyBuilding(evaluation.historyCount);
@@ -133,7 +140,7 @@ export function explain(input, label) {
 
   if (input.trigger === 'set_checked' && lastSet && setNumber) {
     if (label === 'HOLD') return highRpeSetCheckedReason(setNumber, lastSet, locale);
-    if (label === 'PROGRESS') return progressSetCheckedReason(setNumber, lastSet, target ?? null, locale);
+    if (label === 'PROGRESS') return progressSetCheckedReason(setNumber, lastSet, target ?? null, locale, celebrationBasis);
     if (label === 'PR') return prSetCheckedReason(setNumber, lastSet, locale);
     return repDropSetCheckedReason(setNumber, lastSet, locale);
   }
@@ -329,6 +336,18 @@ export function composeWhySheet(input, label, setsToday) {
 
   if (label === 'PROGRESS' && lastSet) {
     const target = input.target;
+    // celebrationBasis: 'reps' (docs/DECISIONS.md) — a rep record at a
+    // weight that didn't itself pass the target needs its own wording,
+    // since "above the target" wouldn't be true here.
+    if (input.celebrationBasis === 'reps') {
+      return {
+        title,
+        whatIDid,
+        calculated: `This set was ${formatNumber(lastSet.weightKg, locale)}kg × ${formatNumber(lastSet.reps, locale)} reps — the most reps yet at this weight.`,
+        aiInterpretation: 'More reps at the same weight is progress too, even without a heavier load.',
+        recommendation: 'Recover well — the next step could be more reps again, or more weight.',
+      };
+    }
     return {
       title,
       whatIDid,

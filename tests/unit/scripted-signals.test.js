@@ -59,6 +59,16 @@ describe('set_checked reason text (HANDOFF section 8, scenario 2)', () => {
     expect(reason).toContain('Set 2');
     expect(reason.length).toBeLessThanOrEqual(LIMITS.signalReason);
   });
+
+  it('a rep-based PROGRESS (docs/DECISIONS.md) mentions the rep count, not the target', () => {
+    const lastSet = normalSet(40, 11, 7);
+    const reason = explain(
+      { trigger: 'set_checked', exercise: incline, evaluation, lastSet, target, setNumber: 3, celebrationBasis: 'reps' },
+      'PROGRESS',
+    );
+    expect(reason).toBe('Set 3 was 40kg × 11 — your best rep count yet at this weight. Nice progress!');
+    expect(reason.length).toBeLessThanOrEqual(LIMITS.signalReason);
+  });
 });
 
 describe('AC-68: set_checked reason text respects the locale', () => {

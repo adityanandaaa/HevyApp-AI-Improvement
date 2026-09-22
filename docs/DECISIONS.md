@@ -128,3 +128,40 @@ the same way as the primary; `renderDockedCard()` renders it as a second
 `.docked-card__reason` block with its own icon; the live-region announcement
 includes both). `src/state/store.js` (`SignalState` gained optional
 `secondaryLabel`/`secondaryReason`).
+
+## More reps at the same weight also celebrates
+
+**Date:** 2026-09-22 (same session)
+
+**What changed:** PROGRESS/PR only ever compared *weight* against the
+target and the all-time max — two sets at an identical weight but very
+different rep counts (e.g. 40kg×8 vs. 40kg×15) were treated the same,
+because volume wasn't part of the check at all. Aditya pointed out that a
+real rep improvement at an existing weight is progress too and deserved the
+same recognition a weight increase gets.
+
+**Decision (Aditya, asked among three options — track an all-time max reps
+per weight the same way weight is tracked, use total volume as the real
+measure, or require weight-PRs to not regress on reps):** track an
+all-time max reps *per weight*, the same shape as the existing all-time max
+weight. If the checked set's reps beat the best rep count ever logged at
+that exact weight — even when the weight itself doesn't exceed today's
+target — it now triggers PROGRESS. A genuine weight increase still takes
+priority when both happen at once (the wording says which one it was).
+This can never produce a PR by itself: a weight only has rep history once
+it's been logged before, and any weight logged before is by definition
+`<=` the all-time max weight, so a rep-based trigger is always PROGRESS,
+never PR.
+
+**Implementation:** `src/domain/rules/history.js` —
+`allTimeMaxRepsAtWeight(sessions, exerciseId, weightKg)`, the reps
+equivalent of `allTimeMaxWorkingWeight`. `src/domain/rules/
+signal-trigger.js` — `reactiveSignal()`'s context gained
+`allTimeMaxRepsAtWeight`; the celebration check is now `exceedsTargetWeight
+|| exceedsRepsAtThisWeight`, and the result carries a new
+`celebrationBasis: 'weight' | 'reps'` so the wording layer knows which
+happened. `src/reasoning/scripted.js` — `progressSetCheckedReason()` and
+`composeWhySheet()`'s PROGRESS branch both branch on `celebrationBasis`,
+since "past the target" isn't true for a reps-only celebration.
+`src/domain/types.js` (`ReasoningInput.celebrationBasis`) and
+`src/state/store.js` (`SignalState.celebrationBasis`) thread it through.

@@ -84,6 +84,9 @@
  * @property {import('./copy.js').Locale} [locale] INTERPRETATION: also not in
  *   section 6. AC-68 requires locale-aware numbers in the scripted text
  *   itself, so the wording layer needs to know which locale to format in.
+ * @property {'weight' | 'reps'} [celebrationBasis] only meaningful for a
+ *   PROGRESS/PR `set_checked` trigger — whether it was exceeding the target
+ *   weight or a new rep record at an existing weight (docs/DECISIONS.md).
  */
 
 export {};

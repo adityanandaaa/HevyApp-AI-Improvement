@@ -19,6 +19,10 @@ const REP_DROP_THRESHOLD = 2;
  * @property {Target | null} target today's suggested target for this exercise
  * @property {number | null} allTimeMaxWeightKg the heaviest working weight
  *   ever logged for this exercise, across every completed session
+ * @property {number | null} allTimeMaxRepsAtWeight the most reps ever logged
+ *   at the checked set's exact weight, across every completed session —
+ *   lets a rep record at an existing weight celebrate too, not just a
+ *   weight increase (docs/DECISIONS.md)
  */
 
 /**
@@ -28,6 +32,10 @@ const REP_DROP_THRESHOLD = 2;
  *   the primary. Currently only ever 'HOLD', for a PROGRESS/PR set that was
  *   also high-RPE (docs/DECISIONS.md): the celebration still leads, but the
  *   card also says the effort was high rather than dropping that entirely.
+ * @property {'weight' | 'reps'} [celebrationBasis] only set alongside a
+ *   PROGRESS/PR label — whether it triggered by exceeding the target
+ *   weight, or by matching/beating it while setting a new rep record at
+ *   that weight. Wording differs (docs/DECISIONS.md).
  */
 
 /**
@@ -40,10 +48,19 @@ const REP_DROP_THRESHOLD = 2;
 export function reactiveSignal(checkedSet, priorSetsToday, context) {
   const isHighRpe = checkedSet.rpe >= HIGH_RPE_THRESHOLD;
 
-  if (context.target && checkedSet.weightKg > context.target.weightKg) {
+  const exceedsTargetWeight = Boolean(context.target && checkedSet.weightKg > context.target.weightKg);
+  // A weight logged before always has allTimeMaxWeightKg >= it (that
+  // session's own working weight was at least this much), so this can only
+  // be true for a weight that's never set a rep record before — meaning a
+  // rep-based celebration is always PROGRESS, never PR.
+  const exceedsRepsAtThisWeight =
+    context.allTimeMaxRepsAtWeight !== null && checkedSet.reps > context.allTimeMaxRepsAtWeight;
+
+  if (exceedsTargetWeight || exceedsRepsAtThisWeight) {
     const isAllTimeHeaviest = context.allTimeMaxWeightKg !== null && checkedSet.weightKg > context.allTimeMaxWeightKg;
     const label = isAllTimeHeaviest ? 'PR' : 'PROGRESS';
-    return isHighRpe ? { label, secondary: 'HOLD' } : { label };
+    const celebrationBasis = exceedsTargetWeight ? 'weight' : 'reps';
+    return isHighRpe ? { label, secondary: 'HOLD', celebrationBasis } : { label, celebrationBasis };
   }
 
   if (isHighRpe) {
