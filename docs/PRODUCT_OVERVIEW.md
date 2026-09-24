@@ -5,7 +5,7 @@ do, and what the prototype in this repo actually does. Full detail lives in
 `docs/AI_Training_Coach_Product_Discovery_v2.md` (the discovery process),
 `HANDOFF.md` (the build spec) and `docs/DECISIONS.md` (decisions made live
 during the build). This file doesn't repeat the acceptance-criteria checklist
-— see README.md's Appendix A for that.
+— that raw list lives in `HANDOFF.md`'s own Appendix A.
 
 ---
 
@@ -139,41 +139,75 @@ scripted rules (not a live model — that's optional milestone M8, not built).
   locale switch (en-GB / id-ID, changes number formatting), reduced motion,
   a tap-target-size overlay, and a reset button.
 
-## 6. Decisions made live, during the build
+## 6. What changed from the plan, during the build
 
-Three moments during and after hands-on testing revised something HANDOFF
-had marked "confirmed" or "do not reopen." Full detail, including the
-interim version that was tried and then changed again, is in
-`docs/DECISIONS.md` — summarised here:
+HANDOFF.md is the original build spec, and several of its sections are
+marked "confirmed" or "do not reopen." Live testing on real interactions
+surfaced several moments where Aditya revised one of those anyway. Full
+reasoning for each, including any interim version that was tried and then
+changed again, is in `docs/DECISIONS.md` — grouped here by what kind of
+change it was.
 
-**Celebrate exceeding the target, instead of asking why the weight
-changed.** HANDOFF's original rule showed the same "why did you change the
-weight?" chips regardless of whether the logged weight was above or below
-target — so lifting *more* than suggested triggered the same
-interrogation-style prompt as lifting less. Live feedback: it should
-celebrate instead. A checked set that beats the target now shows PROGRESS
-("Nice progress!") or PR ("your heaviest yet on this lift," when it's a
-genuine all-time high) with no chips underneath at all — an interim version
-kept the chips alongside the celebration, but that still read as an
-unnecessary ask right after good news, so they were dropped outright for
-this case. Every other case (below target, or at/above it without a
-PROGRESS/PR result) keeps the original "chips every time" behaviour.
+### Added
 
-**A seventh chip, "Regular weight," for skipping a push specifically.** The
-original six chips had no good option for "I deliberately stuck with my
-usual weight" — the closest one, "Changed my mind," implies indecision
-rather than a considered choice. "Regular weight" was added as a seventh
-option, positioned before "Other," but only on the "why did you skip the
-push?" heading — the general "why did you change the weight?" heading
-(used for other weight changes) keeps the original six exactly, since the
-new chip doesn't apply there.
+- **PROGRESS and PR became real, reachable signals.** HANDOFF's rules
+  engine (R12) only ever named HOLD and BACK OFF as signals with an actual
+  trigger; PUSH, PR, ADAPT and PROGRESS were all "scripted in scenarios," a
+  QA system this build never built (section 7 above). Checking a set that
+  beats today's target now triggers PROGRESS for real, and beating the
+  heaviest weight ever logged for that exercise triggers PR — the first
+  time either signal became reachable by actually using the app, not just
+  by a developer pre-scripting a demo.
+- **A seventh chip, "Regular weight."** AC-37 fixed the reason-chip list at
+  exactly six. None of the six fit "I deliberately stuck with my usual
+  weight" well — the closest, "Changed my mind," implies indecision, not a
+  considered choice. The new chip only appears on the "why did you skip the
+  push?" heading; the general "why did you change the weight?" case keeps
+  HANDOFF's original six untouched.
+- **A rep record at an existing weight also counts as progress.** The
+  original PROGRESS/PR check only ever compared weight — two sets at an
+  identical weight but very different rep counts read identically. There's
+  now an all-time max reps *tracked per weight*, the same shape as the
+  existing all-time max weight; beating the best-ever rep count at a
+  weight now triggers PROGRESS even when the weight itself stays under
+  today's target. It can never produce a PR by itself (a weight only has
+  rep history once it's already been logged, so it can't simultaneously be
+  a brand-new heaviest weight).
 
-**ADAPT removed from scope entirely.** HANDOFF section 3 confirmed six
-signals, ADAPT included, but it never had a trigger in this prototype (see
-section 4) and, unlike PROGRESS/PR, wasn't something live testing surfaced a
-need for. It's out of the discovery doc's own MVP Core Capability (Push,
-Hold, Back Off — section 36), so it was cut rather than left as a permanent
-"scripted in scenarios, no scenario system exists" gap.
+### Changed
+
+- **The reason chips no longer show for a set that beats the target.**
+  HANDOFF's original rule showed the same "why did you change the weight?"
+  chips whether the logged weight was above or below the suggested target —
+  so lifting *more* than suggested got the same interrogation-style prompt
+  as lifting less. An overshoot now shows the PROGRESS/PR celebration
+  instead, with chips suppressed entirely for that case; every other case
+  (below target, or at/above it without a PROGRESS/PR result) keeps the
+  original "chips every time" rule.
+- **A high-effort PR no longer loses its celebration to the RPE check.**
+  The reactive rule originally checked RPE before checking whether the
+  target was beaten, so a genuinely heavy PR done at RPE 9+ returned only a
+  plain HOLD caution — no acknowledgment of the PR, and the chips came
+  back since the card no longer counted as a celebration. The card now
+  leads with the celebration and shows the HOLD caution as a second,
+  visually distinct block underneath it, instead of one replacing the
+  other.
+- **The congrats message now states the total reps, not just the weight.**
+  "Set 3 was 44kg — your heaviest yet on this lift" became "Set 3 was
+  44kg × 8 — your heaviest yet on this lift," matching the rep-record
+  wording added alongside it.
+
+### Removed
+
+- **The ADAPT signal.** HANDOFF section 3 confirmed six signals, ADAPT
+  included, with its own icon and a place in the accessibility
+  requirements (AC-15, AC-25, AC-57). It never had a trigger in this
+  prototype, and — unlike PROGRESS/PR — live testing never surfaced a
+  reason to build one for it. It's outside the discovery doc's own MVP
+  Core Capability (Push, Hold, Back Off — section 36 of the discovery
+  doc), so rather than leave it as a permanent "scripted in scenarios, no
+  scenario system exists" gap, it was cut: `SignalLabel` is five values,
+  not six.
 
 ## 7. What this deliberately isn't (yet)
 

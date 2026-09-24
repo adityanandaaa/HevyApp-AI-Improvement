@@ -95,7 +95,7 @@ signal-icons.js` (`SIGNAL_ICON_IDS`, `icon-refresh` mapping removed),
 `src/domain/rules/signal-trigger.js` (R12 comment updated). HANDOFF.md
 itself is left as-is (the original spec, not edited retroactively); this
 entry is the record of the deviation, along with README's Interpretations
-and Appendix A.
+and `docs/PRODUCT_OVERVIEW.md`.
 
 ## A high-RPE PR/PROGRESS shows both, celebration first
 

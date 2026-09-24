@@ -7,6 +7,27 @@ tracker, built for one person (Aditya) using mock data only. See `HANDOFF.md` fo
 the full brief, `docs/AI_Training_Coach_PRD.docx` for the build spec, and
 `docs/AI_Training_Coach_Product_Discovery_v2.md` for the reasoning behind it.
 
+## What it does
+
+The app watches a workout as it's logged and tells the user, in the moment,
+whether to push the weight, hold, or back off — instead of leaving that
+judgement call to the person mid-set. Before a workout it summarises what to
+expect (Today's Focus); during one, checking a set can surface a short signal
+with a one-tap "Why?" explanation; skipping a suggested push offers one-tap
+reasons instead of a survey; reporting pain quietly makes every later
+recommendation more conservative; and finishing the workout produces a plain
+recap of what happened and what to do next session.
+
+Everything is driven by a deterministic rules engine (weight/rep/RPE history,
+three-session trust thresholds, pain propagation) — the wording layer is
+currently scripted, standing in for a live model behind the same interface
+(optional milestone M8, not built here).
+
+See `docs/PRODUCT_OVERVIEW.md` for the full walkthrough: where the idea came
+from, the signals and what triggers them, what shipped, and what changed from
+the original plan during the build. This README stays focused on running and
+developing the prototype.
+
 ## Run it
 
 No build step. The app is plain HTML, CSS and JavaScript, served as-is by a small
@@ -349,8 +370,7 @@ M7 additions:
   iOS/Android hardware — outside what this build session can verify.
   Likewise AC-48 (glance a card for 3 seconds, state the label and action
   correctly in 5 of 5 scenarios) needs an actual human glancing at the
-  screen. Both are called out, not silently marked done, in Appendix A
-  below.
+  screen. Both are called out, not silently marked done.
 
 ## Milestones
 
@@ -364,67 +384,5 @@ next.
 - [x] M4 — Signals
 - [x] M5 — Pain
 - [x] M6 — Recap
-- [x] M7 — Accessibility and QA (automated checks; VoiceOver/TalkBack need Aditya — see Appendix A)
+- [x] M7 — Accessibility and QA (automated checks; VoiceOver/TalkBack need Aditya on real hardware)
 - [ ] M8 — Live model (optional)
-
-## Appendix A tracking
-
-Every row from HANDOFF Appendix A, ticked or noted (working agreement 12.9).
-Legend: ✅ automated (a test asserts it) · 👁 verified by screenshot or code
-review this session, not by an automated assertion · ⚠️ genuinely open —
-needs Aditya, either on a real device or by eye.
-
-| ID | Status | Note |
-|---|---|---|
-| AC-1 to AC-3 | ✅ | `todays-focus-render.test.js` — one component, both placements, in order |
-| AC-4, AC-5 | ✅ | `todays-focus.test.js` — block order and character limits |
-| AC-6 | ✅ | `todays-focus.test.js` (T14) — always leads with Incline |
-| AC-7 | ✅ | `navigation.test.js` / `todays-focus-render.test.js` — Start Routine opens Log Workout |
-| AC-8, AC-9 | ✅ | `todays-focus-render.test.js` + `scripted-signals.test.js` (length) |
-| AC-10 | 👁 | By construction — `render.js` only reads `evaluate()`/`computeTarget()`, never writes to a KG/REPS/RPE input |
-| AC-11 | ✅ | `todays-focus-render.test.js` — Dips shows the history-building line |
-| AC-12 | ⚠️ | 4 of the original 7 triggers are implemented: HOLD (RPE>=9), BACK_OFF (rep drop), and — added after live feedback, see `docs/DECISIONS.md` — PROGRESS/PR (exceeding the target/all-time max). "Need to adapt" (ADAPT) was later dropped from scope entirely, also `docs/DECISIONS.md`, so it's no longer a gap; a reactive PUSH trigger and an accumulated-volume trigger remain unbuilt |
-| AC-13 | ✅ | `docked-card` CSS (flex-column, 40% max-height, docks above the rest bar) + axe scan |
-| AC-14 | ✅ | `signals.test.js` — appears after the signal delay, well under 1s; fades over `--t-card` (200ms) |
-| AC-15 | ✅ | `signals.test.js` — label+icon, reason, Why? in order. A high-RPE PR/PROGRESS adds one extra reason block for the HOLD caution, and a rep-record PROGRESS uses different wording than a weight-based one (`docs/DECISIONS.md`); order and the single label+icon in the header are otherwise unchanged |
-| AC-16 | ✅ | `signals.test.js` — dismiss, next-check, and rest-timer-zero all tested |
-| AC-17 | ✅ | Single `state.signal`, replaced not stacked; Dismiss never touches `rejectedRecommendations` |
-| AC-18 | ✅ | `behaviors.test.js` (focus trap, Close) + `signals.test.js` (four blocks, in order) |
-| AC-19 | ✅ | The checkbox toggle is synchronous; signal computation is wrapped in try/catch (nothing shown or thrown on failure) |
-| AC-20 | 👁 | Reactive signals are recomputed from live `todaysLogs()` on every check, so nothing is "permanent" — not covered by a dedicated regression test |
-| AC-21 to AC-24, AC-26 | ✅ | Golden tests T1-T10 (`evaluate.test.js`) |
-| AC-25 | ✅ | `evaluate()` throws for an exercise outside the routine. ADAPT itself was later dropped from scope (`docs/DECISIONS.md`), so this AC's ADAPT clause is now moot rather than satisfied by a no-op |
-| AC-27, AC-28 | ✅ | `pain.test.js` |
-| AC-29 to AC-32 | ✅ | `pain.test.js` |
-| AC-33 | ✅ | `store.test.js` (session-scoped state) — pain is never added to `rejectedRecommendations` |
-| AC-34 | ✅ | `pain.test.js` greps the Why? sheet for diagnostic/treatment language |
-| AC-35 | 👁 | By construction — KG/REPS/RPE are plain `<input>`s, never disabled |
-| AC-36 | ✅ | `chips.test.js` + `signals.test.js`. Revised live: chips are suppressed when the check also triggers a PROGRESS/PR celebration — see `docs/DECISIONS.md` |
-| AC-37 | ✅/👁 | The general case is exactly six, in order (`copy.test.js`); the "skip the push" case is seven (a live addition, "Regular weight" — see `docs/DECISIONS.md`). Wrap at 393pt is a CSS flex-wrap, checked by screenshot, not pixel-measured |
-| AC-38, AC-39, AC-40 | ✅ | `chips.test.js`, `signals.test.js`, `pain.test.js` |
-| AC-41 | ✅ | `pain.test.js` — choosing the Pain/discomfort chip also reports pain (same button/card/propagation effects as tapping Pain directly) |
-| AC-42 | ✅ | `selectChip()` records to `rejectedRecommendations`; there is no "failed" state anywhere in the app |
-| AC-43 to AC-46 | ✅ | `recap.test.js`, including the AC-46 push-to-42kg -> next-session-says-HOLD case |
-| AC-47 | 👁 | Global `button:active { opacity: 0.7 }` using `--t-press` (100ms) — not asserted by a timing test |
-| AC-48 | ⚠️ | Needs a human — glancing at a card for 3 seconds and recalling it is a perception test, not something this session can run |
-| AC-49 | 👁 | Reviewed by eye: only RPE and PR appear as jargon, matching Hevy's own vocabulary |
-| AC-50 | 👁 | Every transition uses `--t-card` (200ms); nothing in the CSS flashes or blinks |
-| AC-51 | ✅/👁 | `tokens.css` is the only colour source; `--blue-fill` is the one addition (a shade of `--blue`, used only where accessibility required it — see Interpretations). Signals are never colour-only (icon + label, checked by axe's `color-contrast`/`link-in-text-block`-style rules and `signals.test.js`) |
-| AC-52, AC-53 | 👁 | `--fs-*`/`--radius-*` tokens used throughout; icons are 2px stroke, rounded caps (verified by screenshot each milestone) |
-| AC-54 | 👁 | Verified against the mockups at each milestone's screenshot review |
-| AC-55 | ✅ | axe `color-contrast` scan — fixed 3 real violations while building M7 (see Interpretations) |
-| AC-56 | ✅ | `accessibility.test.js` — 0 axe violations across 8 screen states (Home, Workout, Log Workout x2, Why? sheet, Pain, Recap, dev toolbar) |
-| AC-57 | ✅ | Every `SignalLabel` maps to a distinct icon (`signal-icons.js`); `displayLabel()` always renders text alongside it. Now five signals, not six — ADAPT was dropped from scope (`docs/DECISIONS.md`) |
-| AC-58 | ✅/👁 | `behaviors.test.js` doesn't assert this directly, but a manual 200% screenshot check confirmed no horizontal overflow (`scrollWidth === clientWidth === 393`) and no clipped text; fixed one real wrapping-order issue found this way (Today's Focus signal badge) |
-| AC-59 | ✅ | `behaviors.test.js` — Start Routine, Pain, chips, Dismiss, Why? Close and recap Done all measure >=44pt. `.check-btn` is correctly excluded: it's Hevy's own existing control (~35-40pt, HANDOFF section 10), not a new element |
-| AC-60 | ✅ | Every action is a single tap; the Why? sheet has a Close button (its overlay is also click-to-close, though swipe-to-dismiss itself isn't implemented) |
-| AC-61 | 👁 | The docked card, chips, Dismiss, Why? and recap Done all sit in the lower/middle portion of the 852pt screen — not pixel-measured against an exact "lower half" line |
-| AC-62 | ⚠️ | The live region is wired (`#live-region`, `aria-live="polite"`) and its text updates are unit-tested (`signals.test.js`, `pain.test.js`), but real VoiceOver/TalkBack announcement behaviour needs a physical device |
-| AC-63 | ✅ | `pain.test.js` — every control's accessible name contains its visible text; Pain exposes `aria-pressed` |
-| AC-64 | ✅ | `behaviors.test.js` — Tab wraps inside the sheet, Escape closes it, focus returns to the trigger |
-| AC-65 | ✅ | `behaviors.test.js` (toolbar toggle) + `@media (prefers-reduced-motion: reduce)` for the OS-level case |
-| AC-66 | 👁 | Every state has visible text; the prototype has no sound or vibration at all |
-| AC-67 | 👁 | The rest timer is Hevy's own convention, left untouched; nothing here imposes a race against it |
-| AC-68 | ✅ | `copy.test.js` (T13), `scripted-signals.test.js`, `behaviors.test.js` (live id-ID switch across direction lines, signals, Why? sheet and recap) |
-| AC-69 | ✅ | `phone-frame.test.js`, `tokens.test.js` |
-| AC-70 | 👁 | By construction — mock data only, Push Day only, RPE pre-filled for every set |
