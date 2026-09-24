@@ -7,6 +7,9 @@ tracker, built for one person (Aditya) using mock data only. See `HANDOFF.md` fo
 the full brief, `docs/AI_Training_Coach_PRD.docx` for the build spec, and
 `docs/AI_Training_Coach_Product_Discovery_v2.md` for the reasoning behind it.
 
+Aditya's own reflection on using AI for the product discovery process behind
+this project: ["I Used AI to Do Product Discovery on My Own Idea"](https://adityanandaaa.medium.com/i-used-ai-to-do-product-discovery-on-my-own-idea-628c97d8e755) (Medium).
+
 ## What it does
 
 The app watches a workout as it's logged and tells the user, in the moment,
